@@ -1,0 +1,65 @@
+@import "tailwindcss";
+
+@theme inline {
+  /* Backgrounds */
+  --color-bg-base: #0D1117;
+  --color-bg-surface: #161B22;
+  --color-bg-elevated: #1C2128;
+
+  /* Borders */
+  --color-border: #30363D;
+  --color-border-subtle: #21262D;
+
+  /* Accents */
+  --color-accent: #00E5A0;
+  --color-accent-blue: #0EA5E9;
+  --color-accent-glow: rgba(0, 229, 160, 0.15);
+
+  /* Text */
+  --color-text-primary: #F0F6FC;
+  --color-text-secondary: #8B949E;
+  --color-text-muted: #484F58;
+
+  /* States */
+  --color-success: #00E5A0;
+  --color-error: #F85149;
+
+  /* Fonts */
+  --font-display: 'Syne', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-body: 'Inter', sans-serif;
+
+  /* Animations */
+  --animate-pulse-counter: pulse-counter 300ms ease-out;
+  --animate-glow-pulse: glow-pulse 3s ease-in-out infinite;
+  --animate-pulse-confirm: pulse-confirm 400ms ease-out;
+}
+
+@keyframes pulse-counter {
+  0% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 20px var(--color-accent-glow); }
+  50% { box-shadow: 0 0 40px var(--color-accent-glow), 0 0 80px var(--color-accent-glow); }
+}
+
+@keyframes pulse-confirm {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+
+:root {
+  background-color: var(--color-bg-base);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+}
+
+body {
+  background-color: var(--color-bg-base);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
