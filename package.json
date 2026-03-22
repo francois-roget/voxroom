@@ -1,0 +1,31 @@
+{
+  "name": "voxroom",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "test": "vitest",
+    "test:run": "vitest run"
+  },
+  "dependencies": {
+    "mongoose": "^8.13.2",
+    "next": "16.2.1",
+    "next-auth": "^5.0.0-beta.25",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^4.3.4",
+    "@types/mongoose": "^5.11.97",
+    "mongodb-memory-server": "^10.1.4",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "vitest": "^3.1.1"
+  }
+}
