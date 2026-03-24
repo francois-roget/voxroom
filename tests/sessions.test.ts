@@ -4,10 +4,11 @@ const mockUserFindOne = vi.hoisted(() => vi.fn());
 const mockSessionFind = vi.hoisted(() => vi.fn());
 const mockSessionFindOne = vi.hoisted(() => vi.fn());
 const mockSessionCreate = vi.hoisted(() => vi.fn());
+const mockAuth = vi.hoisted(() => vi.fn());
 
 // Mock next-auth
 vi.mock('@/auth', () => ({
-  auth: vi.fn(),
+  auth: mockAuth,
 }));
 
 // Mock next/server
@@ -40,7 +41,6 @@ vi.mock('@/models/Session', () => ({
   },
 }));
 
-import { auth } from '@/auth';
 import { GET, POST } from '@/app/api/sessions/route';
 
 const mockUser = { _id: 'user-id-123', email: 'trainer@example.com', name: 'Trainer', image: '' };
@@ -51,7 +51,7 @@ beforeEach(() => {
 
 describe('POST /api/sessions', () => {
   it('returns 401 when unauthenticated', async () => {
-    vi.mocked(auth).mockResolvedValueOnce(null);
+    mockAuth.mockResolvedValueOnce(null);
     const req = new Request('http://localhost/api/sessions', {
       method: 'POST',
       body: JSON.stringify({ name: 'Test' }),
@@ -61,7 +61,7 @@ describe('POST /api/sessions', () => {
   });
 
   it('returns 400 when name is missing', async () => {
-    vi.mocked(auth).mockResolvedValueOnce({
+    mockAuth.mockResolvedValueOnce({
       user: { email: 'trainer@example.com', name: 'Trainer', image: '' },
       expires: '',
     });
@@ -76,7 +76,7 @@ describe('POST /api/sessions', () => {
   });
 
   it('returns 400 when name is blank', async () => {
-    vi.mocked(auth).mockResolvedValueOnce({
+    mockAuth.mockResolvedValueOnce({
       user: { email: 'trainer@example.com', name: 'Trainer', image: '' },
       expires: '',
     });
@@ -91,7 +91,7 @@ describe('POST /api/sessions', () => {
   });
 
   it('returns 201 and a session with 4-char code when creation succeeds', async () => {
-    vi.mocked(auth).mockResolvedValueOnce({
+    mockAuth.mockResolvedValueOnce({
       user: { email: 'trainer@example.com', name: 'Trainer', image: '' },
       expires: '',
     });
@@ -123,13 +123,13 @@ describe('POST /api/sessions', () => {
 
 describe('GET /api/sessions', () => {
   it('returns 401 when unauthenticated', async () => {
-    vi.mocked(auth).mockResolvedValueOnce(null);
+    mockAuth.mockResolvedValueOnce(null);
     const res = await GET();
     expect(res.status).toBe(401);
   });
 
   it('returns sessions list for authenticated user', async () => {
-    vi.mocked(auth).mockResolvedValueOnce({
+    mockAuth.mockResolvedValueOnce({
       user: { email: 'trainer@example.com', name: 'Trainer', image: '' },
       expires: '',
     });

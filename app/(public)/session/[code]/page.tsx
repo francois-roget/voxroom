@@ -14,6 +14,14 @@ function getOrCreateParticipantId(): string {
   return id;
 }
 
+function hasAnswered(questionId: string): boolean {
+  return localStorage.getItem(`voxroom_answered_${questionId}`) === '1';
+}
+
+function markAnswered(questionId: string): void {
+  localStorage.setItem(`voxroom_answered_${questionId}`, '1');
+}
+
 export default function SessionPage() {
   const { code } = useParams<{ code: string }>();
 
@@ -26,6 +34,7 @@ export default function SessionPage() {
   const [wordInput, setWordInput] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [answered, setAnswered] = useState(false);
+  const [alreadyAnswered, setAlreadyAnswered] = useState(false);
   const [submitError, setSubmitError] = useState('');
 
   const load = useCallback(async () => {
@@ -36,6 +45,12 @@ export default function SessionPage() {
       setSession(data.session);
       const open = (data.questions as IQuestion[]).find((q) => q.status === 'open') ?? null;
       setOpenQuestion(open);
+      if (open && hasAnswered(String(open._id))) {
+        setAlreadyAnswered(true);
+      } else {
+        setAlreadyAnswered(false);
+        setAnswered(false);
+      }
     } catch {
       setError('Erreur de chargement.');
     } finally {
@@ -70,7 +85,8 @@ export default function SessionPage() {
       });
 
       if (res.status === 409) {
-        setAnswered(true);
+        markAnswered(String(openQuestion._id));
+        setAlreadyAnswered(true);
         return;
       }
       if (!res.ok) {
@@ -79,6 +95,7 @@ export default function SessionPage() {
         return;
       }
 
+      markAnswered(String(openQuestion._id));
       setAnswered(true);
     } catch {
       setSubmitError('Impossible d\'envoyer la réponse.');
@@ -147,8 +164,22 @@ export default function SessionPage() {
           </div>
         )}
 
+        {/* Already answered (persisted across refresh) */}
+        {openQuestion && alreadyAnswered && !answered && (
+          <div
+            className="rounded-xl p-8 text-center flex flex-col gap-3"
+            style={{ backgroundColor: 'var(--color-bg-surface)', border: '1px solid var(--color-border)' }}
+          >
+            <span className="text-3xl">✓</span>
+            <p className="font-medium" style={{ color: 'var(--color-text-secondary)' }}>Tu as déjà répondu.</p>
+            <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+              En attente des résultats…
+            </p>
+          </div>
+        )}
+
         {/* Question form */}
-        {openQuestion && !answered && (
+        {openQuestion && !answered && !alreadyAnswered && (
           <div
             className="rounded-xl p-6 flex flex-col gap-5"
             style={{ backgroundColor: 'var(--color-bg-surface)', border: '1px solid var(--color-border)' }}
