@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { connectDB } from '@/lib/db';
+import { getOwnerAndQuestion } from '@/lib/questions';
 import Question from '@/models/Question';
 import Session from '@/models/Session';
-import User from '@/models/User';
 
 export async function POST(
   _request: Request,
@@ -17,17 +16,9 @@ export async function POST(
   const { id } = await params;
 
   try {
-    await connectDB();
-    const dbUser = await User.findOne({ email: authSession.user.email }).lean() as { _id: unknown } | null;
-    if (!dbUser) return NextResponse.json({ error: 'User not found' }, { status: 404 });
-
-    const question = await Question.findById(id).lean() as { _id: unknown; sessionId: unknown } | null;
-    if (!question) return NextResponse.json({ error: 'Question not found' }, { status: 404 });
-
-    const voxSession = await Session.findById(question.sessionId).lean() as { ownerId: unknown } | null;
-    if (!voxSession) return NextResponse.json({ error: 'Session not found' }, { status: 404 });
-    if (String(voxSession.ownerId) !== String(dbUser._id)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    const result = await getOwnerAndQuestion(id, authSession.user.email);
+    if ('error' in result) {
+      return NextResponse.json({ error: result.error }, { status: result.status });
     }
 
     const updated = await Question.findByIdAndUpdate(
@@ -36,7 +27,7 @@ export async function POST(
       { new: true }
     ).lean();
 
-    await Session.findByIdAndUpdate(question.sessionId, { currentQuestionId: null });
+    await Session.findByIdAndUpdate(result.question.sessionId, { currentQuestionId: null });
 
     return NextResponse.json(updated);
   } catch {

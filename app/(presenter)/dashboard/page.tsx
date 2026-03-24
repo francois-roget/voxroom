@@ -15,7 +15,7 @@ export default async function DashboardPage() {
     if (dbUser) {
       sessions = await Session.find({ ownerId: dbUser._id })
         .sort({ createdAt: -1 })
-        .lean() as ISession[];
+        .lean() as unknown as ISession[];
     }
   }
 
@@ -57,10 +57,10 @@ export default async function DashboardPage() {
             {sessions.map((s) => (
               <div
                 key={String(s._id)}
-                className="rounded-xl p-5 flex items-center justify-between"
+                className="rounded-xl p-5 flex items-center justify-between gap-4"
                 style={{ backgroundColor: 'var(--color-bg-surface)', border: '1px solid var(--color-border)' }}
               >
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-1 min-w-0">
                   <span className="font-medium" style={{ color: 'var(--color-text-primary)' }}>
                     {s.name}
                   </span>
@@ -68,12 +68,28 @@ export default async function DashboardPage() {
                     Créée le {new Date(s.createdAt).toLocaleDateString('fr-FR')}
                   </span>
                 </div>
-                <span
-                  className="font-bold tracking-widest text-lg"
-                  style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-accent)' }}
-                >
-                  {s.code}
-                </span>
+                <div className="flex items-center gap-3 shrink-0">
+                  <span
+                    className="font-bold tracking-widest text-lg"
+                    style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-accent)' }}
+                  >
+                    {s.code}
+                  </span>
+                  <Link
+                    href={`/sessions/${s.code}/edit`}
+                    className="rounded-lg px-3 py-1.5 text-xs font-medium"
+                    style={{ backgroundColor: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', color: 'var(--color-text-secondary)' }}
+                  >
+                    Éditer
+                  </Link>
+                  <Link
+                    href={`/sessions/${s.code}/control`}
+                    className="rounded-lg px-3 py-1.5 text-xs font-medium"
+                    style={{ backgroundColor: 'var(--color-accent)', color: '#0D1117' }}
+                  >
+                    Contrôle
+                  </Link>
+                </div>
               </div>
             ))}
           </div>
