@@ -1,21 +1,23 @@
 import { auth } from '@/auth';
+import { connectDB } from '@/lib/db';
+import User from '@/models/User';
+import Session from '@/models/Session';
 import Link from 'next/link';
 import type { ISession } from '@/types';
 
-async function getSessions(): Promise<ISession[]> {
-  const session = await auth();
-  const baseUrl = process.env.NEXTAUTH_URL ?? 'http://localhost:3000';
-  const res = await fetch(`${baseUrl}/api/sessions`, {
-    headers: { Cookie: '' },
-    cache: 'no-store',
-  });
-  if (!res.ok) return [];
-  return res.json();
-}
-
 export default async function DashboardPage() {
   const session = await auth();
-  const sessions = await getSessions();
+
+  let sessions: ISession[] = [];
+  if (session?.user?.email) {
+    await connectDB();
+    const dbUser = await User.findOne({ email: session.user.email }).lean() as { _id: unknown } | null;
+    if (dbUser) {
+      sessions = await Session.find({ ownerId: dbUser._id })
+        .sort({ createdAt: -1 })
+        .lean() as ISession[];
+    }
+  }
 
   return (
     <main className="min-h-screen p-8" style={{ backgroundColor: 'var(--color-bg-base)' }}>

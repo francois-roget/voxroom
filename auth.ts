@@ -4,7 +4,12 @@ import { connectDB } from '@/lib/db';
 import User from '@/models/User';
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  providers: [Google],
+  providers: [
+    Google({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    }),
+  ],
   callbacks: {
     async signIn({ user }) {
       if (!user.email) return false;
