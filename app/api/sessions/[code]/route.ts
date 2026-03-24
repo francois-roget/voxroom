@@ -13,7 +13,7 @@ export async function GET(
     await connectDB();
     const session = (await Session.findOne({
       code: code.toUpperCase(),
-    }).lean()) as unknown as { _id: unknown } | null;
+    }).lean() as unknown as { _id: unknown } | null;
 
     if (!session) {
       return NextResponse.json({ error: "Session not found" }, { status: 404 });
