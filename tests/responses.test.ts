@@ -2,7 +2,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const mockQuestionFindById = vi.hoisted(() => vi.fn());
 const mockResponseFindOne = vi.hoisted(() => vi.fn());
+const mockResponseFind = vi.hoisted(() => vi.fn());
 const mockResponseCreate = vi.hoisted(() => vi.fn());
+const mockSessionFindById = vi.hoisted(() => vi.fn());
 
 vi.mock('next/server', () => ({
   NextResponse: {
@@ -26,8 +28,19 @@ vi.mock('@/models/Question', () => ({
 vi.mock('@/models/Response', () => ({
   default: {
     findOne: () => ({ lean: mockResponseFindOne }),
+    find: () => ({ lean: mockResponseFind }),
     create: mockResponseCreate,
   },
+}));
+
+vi.mock('@/models/Session', () => ({
+  default: {
+    findById: () => ({ lean: mockSessionFindById }),
+  },
+}));
+
+vi.mock('@/lib/pusher', () => ({
+  pusher: { trigger: vi.fn().mockResolvedValue({}) },
 }));
 
 import { POST } from '@/app/api/responses/route';
@@ -88,6 +101,8 @@ describe('POST /api/responses', () => {
     mockQuestionFindById.mockResolvedValueOnce({ status: 'open' });
     mockResponseFindOne.mockResolvedValueOnce(null);
     mockResponseCreate.mockResolvedValueOnce({ _id: 'r-id', ...validBody });
+    mockSessionFindById.mockResolvedValueOnce({ code: 'ABCD' });
+    mockResponseFind.mockResolvedValueOnce([{ value: 'React' }]);
     const req = new Request('http://localhost/api/responses', {
       method: 'POST',
       body: JSON.stringify(validBody),
