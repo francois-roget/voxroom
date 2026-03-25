@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
+import { getPusherClient } from "@/lib/pusher-client";
 import type { IQuestion, ISession } from "@/types";
 
 function getOrCreateParticipantId(): string {
@@ -66,6 +67,36 @@ export default function SessionPage() {
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    const client = getPusherClient();
+    const channel = client.subscribe(`session-${code.toUpperCase()}`);
+
+    channel.bind('question:opened', (data: { question: IQuestion }) => {
+      const q = data.question as unknown as IQuestion;
+      setOpenQuestion(q);
+      if (hasAnswered(String(q._id))) {
+        setAlreadyAnswered(true);
+        setAnswered(false);
+      } else {
+        setAlreadyAnswered(false);
+        setAnswered(false);
+        setSelected('');
+        setWordInput('');
+      }
+    });
+
+    channel.bind('question:closed', () => {
+      setOpenQuestion(null);
+      setAnswered(false);
+      setAlreadyAnswered(false);
+    });
+
+    return () => {
+      channel.unbind_all();
+      client.unsubscribe(`session-${code.toUpperCase()}`);
+    };
+  }, [code]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

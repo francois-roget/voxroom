@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import type { IQuestion, ISession } from '@/types';
+import { getPusherClient } from '@/lib/pusher-client';
+import type { IQuestion, ISession, AggregatedResult } from '@/types';
 
 const STATUS_LABEL: Record<string, string> = {
   pending: 'En attente',
@@ -20,6 +21,8 @@ export default function ControlPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [liveCount, setLiveCount] = useState(0);
+  const [liveResults, setLiveResults] = useState<AggregatedResult | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -36,6 +39,21 @@ export default function ControlPage() {
   }, [code]);
 
   useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    const client = getPusherClient();
+    const channel = client.subscribe(`private-control-${code.toUpperCase()}`);
+
+    channel.bind('response:new', (data: { count: number; results: AggregatedResult }) => {
+      setLiveCount(data.count);
+      setLiveResults(data.results);
+    });
+
+    return () => {
+      channel.unbind_all();
+      client.unsubscribe(`private-control-${code.toUpperCase()}`);
+    };
+  }, [code]);
 
   async function action(questionId: string, endpoint: 'open' | 'close' | 'reveal') {
     setActionLoading(`${questionId}-${endpoint}`);
@@ -109,6 +127,7 @@ export default function ControlPage() {
               const isRevealed = q.status === 'revealed';
               const isPending = q.status === 'pending';
               const isClosed = q.status === 'closed';
+              const showLive = isOpen && liveCount > 0;
 
               return (
                 <div
@@ -142,6 +161,21 @@ export default function ControlPage() {
                       {STATUS_LABEL[q.status]}
                     </span>
                   </div>
+
+                  {/* Live counter */}
+                  {showLive && (
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="text-2xl font-black"
+                        style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-accent)' }}
+                      >
+                        {liveCount}
+                      </span>
+                      <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                        {liveCount === 1 ? 'réponse' : 'réponses'}
+                      </span>
+                    </div>
+                  )}
 
                   {/* Action buttons */}
                   <div className="flex gap-2 flex-wrap">
