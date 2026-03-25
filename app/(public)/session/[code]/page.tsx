@@ -108,6 +108,7 @@ export default function SessionPage() {
       setSessionClosed(true);
     });
 
+
     return () => {
       channel.unbind_all();
       client.unsubscribe(`session-${code.toUpperCase()}`);
