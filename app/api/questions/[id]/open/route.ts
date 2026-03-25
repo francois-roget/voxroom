@@ -44,8 +44,6 @@ export async function POST(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const { question } = result;
-
     await Question.updateMany(
       { sessionId: question.sessionId, status: "open" },
       { status: "closed" },

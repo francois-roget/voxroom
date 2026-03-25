@@ -34,6 +34,7 @@ export default function SessionPage() {
   const [wordInput, setWordInput] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [answered, setAnswered] = useState(false);
+  const [alreadyAnswered, setAlreadyAnswered] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
   const load = useCallback(async () => {
@@ -204,50 +205,6 @@ export default function SessionPage() {
               className="text-sm"
               style={{ color: "var(--color-text-secondary)" }}
             >
-              En attente des résultats…
-            </p>
-          </div>
-        )}
-
-        {/* Already answered (persisted across refresh) */}
-        {openQuestion && alreadyAnswered && !answered && (
-          <div
-            className="rounded-xl p-8 text-center flex flex-col gap-3"
-            style={{
-              backgroundColor: "var(--color-bg-surface)",
-              border: "1px solid var(--color-border)",
-            }}
-          >
-            <span className="text-3xl">✓</span>
-            <p
-              className="font-medium"
-              style={{ color: "var(--color-text-secondary)" }}
-            >
-              Tu as déjà répondu.
-            </p>
-            <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
-              En attente des résultats…
-            </p>
-          </div>
-        )}
-
-        {/* Already answered (persisted across refresh) */}
-        {openQuestion && alreadyAnswered && !answered && (
-          <div
-            className="rounded-xl p-8 text-center flex flex-col gap-3"
-            style={{
-              backgroundColor: "var(--color-bg-surface)",
-              border: "1px solid var(--color-border)",
-            }}
-          >
-            <span className="text-3xl">✓</span>
-            <p
-              className="font-medium"
-              style={{ color: "var(--color-text-secondary)" }}
-            >
-              Tu as déjà répondu.
-            </p>
-            <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
               En attente des résultats…
             </p>
           </div>

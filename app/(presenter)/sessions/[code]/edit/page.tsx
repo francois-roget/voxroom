@@ -21,6 +21,7 @@ export default function EditSessionPage() {
   const [newChoices, setNewChoices] = useState(["", "", "", ""]);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -219,16 +220,35 @@ export default function EditSessionPage() {
                   </span>
                 </div>
               </div>
-              <button
-                onClick={() => handleDelete(String(q._id))}
-                className="text-xs px-3 py-1 rounded-lg shrink-0"
-                style={{
-                  color: "var(--color-error)",
-                  border: "1px solid var(--color-error)",
-                }}
-              >
-                Suppr.
-              </button>
+              {confirmDeleteId === String(q._id) ? (
+                <div className="flex gap-2 shrink-0">
+                  <button
+                    onClick={() => handleDelete(String(q._id))}
+                    className="text-xs px-3 py-1 rounded-lg font-medium"
+                    style={{ backgroundColor: "var(--color-error)", color: "#fff" }}
+                  >
+                    Confirmer
+                  </button>
+                  <button
+                    onClick={() => setConfirmDeleteId(null)}
+                    className="text-xs px-3 py-1 rounded-lg"
+                    style={{ border: "1px solid var(--color-border)", color: "var(--color-text-secondary)" }}
+                  >
+                    Annuler
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setConfirmDeleteId(String(q._id))}
+                  className="text-xs px-3 py-1 rounded-lg shrink-0"
+                  style={{
+                    color: "var(--color-error)",
+                    border: "1px solid var(--color-error)",
+                  }}
+                >
+                  Suppr.
+                </button>
+              )}
             </div>
           ))}
         </div>
