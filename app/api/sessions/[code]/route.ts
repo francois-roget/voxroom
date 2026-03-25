@@ -11,7 +11,7 @@ export async function GET(
 
   try {
     await connectDB();
-    const session = (await Session.findOne({
+    const session = await Session.findOne({
       code: code.toUpperCase(),
     }).lean() as unknown as { _id: unknown } | null;
 
