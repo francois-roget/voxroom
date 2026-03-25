@@ -12,6 +12,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ],
   callbacks: {
     async signIn({ user }) {
+      console.log('[auth] signIn callback — email:', user.email);
       if (!user.email) return false;
       await connectDB();
       await User.findOneAndUpdate(
@@ -19,14 +20,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         { email: user.email, name: user.name ?? '', image: user.image ?? '' },
         { upsert: true, new: true }
       );
+      console.log('[auth] signIn — upsert utilisateur OK');
       return true;
     },
     async jwt({ token, user }) {
       if (user?.email) {
+        console.log('[auth] jwt callback — récupération _id pour', user.email);
         await connectDB();
         const dbUser = await User.findOne({ email: user.email }).lean() as { _id: unknown } | null;
         if (dbUser) {
           token.id = String(dbUser._id);
+          console.log('[auth] jwt — token.id défini :', token.id);
+        } else {
+          console.warn('[auth] jwt — utilisateur introuvable en base pour', user.email);
         }
       }
       return token;
