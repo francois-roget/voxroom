@@ -60,7 +60,8 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json(question, { status: 201 });
-  } catch {
+  } catch (err) {
+    console.error('[POST /api/questions]', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

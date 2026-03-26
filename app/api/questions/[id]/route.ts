@@ -70,7 +70,8 @@ export async function PATCH(
       new: true,
     }).lean();
     return NextResponse.json(updated);
-  } catch {
+  } catch (err) {
+    console.error('[PATCH /api/questions/[id]]', err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -100,7 +101,8 @@ export async function DELETE(
 
     await Question.findByIdAndDelete(id);
     return NextResponse.json({ success: true });
-  } catch {
+  } catch (err) {
+    console.error('[DELETE /api/questions/[id]]', err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

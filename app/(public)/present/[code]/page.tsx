@@ -1,9 +1,8 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import { useParams } from 'next/navigation';
-import dynamic from 'next/dynamic';
-import { QRCodeSVG } from 'qrcode.react';
+import { useState, useEffect, useCallback } from "react";
+import { useParams } from "next/navigation";
+import { QRCodeSVG } from "qrcode.react";
 import {
   BarChart,
   Bar,
@@ -12,16 +11,15 @@ import {
   Cell,
   ResponsiveContainer,
   LabelList,
-} from 'recharts';
-import { getPusherClient } from '@/lib/pusher-client';
-import type { IQuestion, ISession, AggregatedResult } from '@/types';
+} from "recharts";
+import { getPusherClient } from "@/lib/pusher-client";
+import type { IQuestion, ISession, AggregatedResult } from "@/types";
 
-const WordCloud = dynamic(() => import('react-wordcloud'), { ssr: false });
-
-type PresenterState = 'waiting' | 'open' | 'revealed';
+type PresenterState = "waiting" | "open" | "revealed";
 
 interface OpenedPayload {
-  question: { id: string; text: string; choices: string[]; type: string };
+  question: { _id: string; text: string; choices: string[]; type: string };
+  responseCount: number;
 }
 interface RevealedPayload {
   results: AggregatedResult;
@@ -30,36 +28,53 @@ interface CountPayload {
   count: number;
 }
 
-const ACCENT = '#00E5A0';
-const ACCENT_BLUE = '#0EA5E9';
-const BG = '#0D1117';
-const SURFACE = '#161B22';
+const ACCENT = "#00E5A0";
+const ACCENT_BLUE = "#0EA5E9";
+const BG = "#0D1117";
+const SURFACE = "#161B22";
 
 export default function PresenterPage() {
   const { code } = useParams<{ code: string }>();
 
   const [session, setSession] = useState<ISession | null>(null);
-  const [state, setState] = useState<PresenterState>('waiting');
-  const [question, setQuestion] = useState<OpenedPayload['question'] | null>(null);
+  const [state, setState] = useState<PresenterState>("waiting");
+  const [question, setQuestion] = useState<OpenedPayload["question"] | null>(
+    null,
+  );
   const [responseCount, setResponseCount] = useState(0);
   const [results, setResults] = useState<AggregatedResult | null>(null);
-  const [joinUrl, setJoinUrl] = useState('');
+  const [joinUrl, setJoinUrl] = useState("");
 
   const load = useCallback(async () => {
     const res = await fetch(`/api/sessions/${code}`);
     if (!res.ok) return;
     const data = await res.json();
     setSession(data.session);
+    setResponseCount(data.responseCount ?? 0);
 
-    const openQ = (data.questions as IQuestion[]).find((q) => q.status === 'open');
-    const revealedQ = (data.questions as IQuestion[]).find((q) => q.status === 'revealed');
+    const openQ = (data.questions as IQuestion[]).find(
+      (q) => q.status === "open",
+    );
+    const revealedQ = (data.questions as IQuestion[]).find(
+      (q) => q.status === "revealed",
+    );
 
     if (openQ) {
-      setQuestion({ id: String(openQ._id), text: openQ.text, choices: openQ.choices, type: openQ.type });
-      setState('open');
+      setQuestion({
+        _id: String(openQ._id),
+        text: openQ.text,
+        choices: openQ.choices,
+        type: openQ.type,
+      });
+      setState("open");
     } else if (revealedQ) {
-      setQuestion({ id: String(revealedQ._id), text: revealedQ.text, choices: revealedQ.choices, type: revealedQ.type });
-      setState('revealed');
+      setQuestion({
+        _id: String(revealedQ._id),
+        text: revealedQ.text,
+        choices: revealedQ.choices,
+        type: revealedQ.type,
+      });
+      setState("revealed");
     }
   }, [code]);
 
@@ -72,26 +87,26 @@ export default function PresenterPage() {
     const client = getPusherClient();
     const channel = client.subscribe(`session-${code.toUpperCase()}`);
 
-    channel.bind('question:opened', (data: OpenedPayload) => {
+    channel.bind("question:opened", (data: OpenedPayload) => {
       setQuestion(data.question);
-      setResponseCount(0);
+      setResponseCount(data.responseCount ?? 0);
       setResults(null);
-      setState('open');
+      setState("open");
     });
 
-    channel.bind('question:revealed', (data: RevealedPayload) => {
+    channel.bind("question:revealed", (data: RevealedPayload) => {
       setResults(data.results);
-      setState('revealed');
+      setState("revealed");
     });
 
-    channel.bind('question:closed', () => {
-      setState('waiting');
+    channel.bind("question:closed", () => {
+      setState("waiting");
       setQuestion(null);
       setResults(null);
       setResponseCount(0);
     });
 
-    channel.bind('response:count', (data: CountPayload) => {
+    channel.bind("response:count", (data: CountPayload) => {
       setResponseCount(data.count);
     });
 
@@ -102,11 +117,18 @@ export default function PresenterPage() {
   }, [code]);
 
   const chartData = results
-    ? Object.entries(results).map(([label, { count, percent }]) => ({ label, count, percent }))
+    ? Object.entries(results).map(([label, { count, percent }]) => ({
+        label,
+        count,
+        percent,
+      }))
     : [];
 
   const wordcloudData = results
-    ? Object.entries(results).map(([text, { count }]) => ({ text, value: count }))
+    ? Object.entries(results).map(([text, { count }]) => ({
+        text,
+        value: count,
+      }))
     : [];
 
   return (
@@ -115,19 +137,25 @@ export default function PresenterPage() {
       style={{ backgroundColor: BG }}
     >
       {/* WAITING */}
-      {state === 'waiting' && (
+      {state === "waiting" && (
         <div className="flex flex-col items-center gap-10">
           <div className="text-center">
-            <p className="text-sm font-medium tracking-widest uppercase mb-3" style={{ color: 'var(--color-text-muted)' }}>
+            <p
+              className="text-sm font-medium tracking-widest uppercase mb-3"
+              style={{ color: "var(--color-text-muted)" }}
+            >
               Rejoins la session
             </p>
             <div
               className="text-8xl font-black tracking-widest"
-              style={{ fontFamily: 'var(--font-mono)', color: ACCENT }}
+              style={{ fontFamily: "var(--font-mono)", color: ACCENT }}
             >
               {session?.code ?? code.toUpperCase()}
             </div>
-            <p className="text-lg mt-3" style={{ color: 'var(--color-text-secondary)' }}>
+            <p
+              className="text-lg mt-3"
+              style={{ color: "var(--color-text-secondary)" }}
+            >
               {session?.name}
             </p>
           </div>
@@ -135,35 +163,42 @@ export default function PresenterPage() {
           {joinUrl && (
             <div
               className="p-5 rounded-2xl"
-              style={{ backgroundColor: '#ffffff' }}
+              style={{ backgroundColor: "#ffffff" }}
             >
               <QRCodeSVG value={joinUrl} size={180} />
             </div>
           )}
 
-          <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+          <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
             En attente du formateur…
           </p>
         </div>
       )}
 
       {/* OPEN */}
-      {state === 'open' && question && (
+      {state === "open" && question && (
         <div className="w-full max-w-3xl flex flex-col items-center gap-12">
           <p
             className="text-5xl font-bold text-center leading-tight"
-            style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)' }}
+            style={{
+              fontFamily: "var(--font-display)",
+              color: "var(--color-text-primary)",
+            }}
           >
             {question.text}
           </p>
 
-          {question.type === 'mcq' && (
+          {question.type === "mcq" && (
             <div className="flex flex-wrap gap-4 justify-center">
               {question.choices.map((choice) => (
                 <div
                   key={choice}
                   className="px-6 py-3 rounded-xl text-xl font-medium"
-                  style={{ backgroundColor: SURFACE, border: '1px solid var(--color-border)', color: 'var(--color-text-primary)' }}
+                  style={{
+                    backgroundColor: SURFACE,
+                    border: "1px solid var(--color-border)",
+                    color: "var(--color-text-primary)",
+                  }}
                 >
                   {choice}
                 </div>
@@ -174,50 +209,70 @@ export default function PresenterPage() {
           <div className="flex flex-col items-center gap-2">
             <span
               className="text-7xl font-black"
-              style={{ fontFamily: 'var(--font-mono)', color: ACCENT }}
+              style={{ fontFamily: "var(--font-mono)", color: ACCENT }}
             >
               {responseCount}
             </span>
-            <span className="text-lg" style={{ color: 'var(--color-text-secondary)' }}>
-              {responseCount === 1 ? 'réponse' : 'réponses'}
+            <span
+              className="text-lg"
+              style={{ color: "var(--color-text-secondary)" }}
+            >
+              {responseCount === 1 ? "réponse" : "réponses"}
             </span>
           </div>
         </div>
       )}
 
       {/* REVEALED */}
-      {state === 'revealed' && question && results && (
+      {state === "revealed" && question && results && (
         <div className="w-full max-w-4xl flex flex-col items-center gap-10">
           <p
             className="text-4xl font-bold text-center leading-tight"
-            style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)' }}
+            style={{
+              fontFamily: "var(--font-display)",
+              color: "var(--color-text-primary)",
+            }}
           >
             {question.text}
           </p>
 
-          {question.type === 'mcq' && chartData.length > 0 && (
+          {question.type === "mcq" && chartData.length > 0 && (
             <div className="w-full" style={{ height: 360 }}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData} layout="vertical" margin={{ left: 20, right: 60 }}>
+                <BarChart
+                  data={chartData}
+                  layout="vertical"
+                  margin={{ left: 20, right: 60 }}
+                >
                   <XAxis type="number" domain={[0, 100]} hide />
                   <YAxis
                     type="category"
                     dataKey="label"
                     width={160}
-                    tick={{ fill: 'var(--color-text-secondary)', fontSize: 18 }}
+                    tick={{ fill: "var(--color-text-secondary)", fontSize: 18 }}
                   />
                   <Bar dataKey="percent" radius={[0, 8, 8, 0]}>
                     {chartData.map((entry, index) => (
                       <Cell
                         key={entry.label}
-                        fill={index === 0 ? ACCENT : index === 1 ? ACCENT_BLUE : 'var(--color-bg-elevated)'}
+                        fill={
+                          index === 0
+                            ? ACCENT
+                            : index === 1
+                              ? ACCENT_BLUE
+                              : "var(--color-bg-elevated)"
+                        }
                       />
                     ))}
                     <LabelList
                       dataKey="percent"
                       position="right"
                       formatter={(v: unknown) => `${v}%`}
-                      style={{ fill: 'var(--color-text-primary)', fontSize: 18, fontWeight: 'bold' }}
+                      style={{
+                        fill: "var(--color-text-primary)",
+                        fontSize: 18,
+                        fontWeight: "bold",
+                      }}
                     />
                   </Bar>
                 </BarChart>
@@ -225,20 +280,38 @@ export default function PresenterPage() {
             </div>
           )}
 
-          {question.type === 'wordcloud' && wordcloudData.length > 0 && (
-            <div className="w-full" style={{ height: 400 }}>
-              <WordCloud
-                words={wordcloudData}
-                options={{
-                  colors: [ACCENT, ACCENT_BLUE, '#F0F6FC', '#8B949E'],
-                  fontFamily: 'Inter, sans-serif',
-                  fontSizes: [24, 80],
-                  rotations: 0,
-                  enableTooltip: false,
-                }}
-              />
-            </div>
-          )}
+          {question.type === "wordcloud" &&
+            wordcloudData.length > 0 &&
+            (() => {
+              const max = Math.max(...wordcloudData.map((w) => w.value));
+              const colors = [ACCENT, ACCENT_BLUE, "#F0F6FC", "#8B949E"];
+              return (
+                <div
+                  className="w-full flex flex-wrap gap-4 justify-center items-center"
+                  style={{ minHeight: 300 }}
+                >
+                  {wordcloudData
+                    .sort((a, b) => b.value - a.value)
+                    .map((w, i) => {
+                      const size = Math.round(24 + (w.value / max) * 56);
+                      return (
+                        <span
+                          key={w.text}
+                          style={{
+                            fontSize: size,
+                            fontWeight: 700,
+                            color: colors[i % colors.length],
+                            lineHeight: 1.2,
+                            fontFamily: "var(--font-display)",
+                          }}
+                        >
+                          {w.text}
+                        </span>
+                      );
+                    })}
+                </div>
+              );
+            })()}
         </div>
       )}
     </main>

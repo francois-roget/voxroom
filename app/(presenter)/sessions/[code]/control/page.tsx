@@ -31,6 +31,7 @@ export default function ControlPage() {
       const data = await res.json();
       setSession(data.session);
       setQuestions(data.questions);
+      setLiveCount(data.responseCount ?? 0);
     } catch {
       setError('Erreur de chargement.');
     } finally {
