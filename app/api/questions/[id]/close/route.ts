@@ -48,7 +48,8 @@ export async function POST(
     await pusher.trigger(`session-${voxSession.code}`, 'question:closed', {});
 
     return NextResponse.json(updated);
-  } catch {
+  } catch (err) {
+    console.error('[POST /api/questions/[id]/close]', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

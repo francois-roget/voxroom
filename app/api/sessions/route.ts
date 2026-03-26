@@ -23,7 +23,8 @@ export async function GET() {
       .lean();
 
     return NextResponse.json(sessions);
-  } catch {
+  } catch (err) {
+    console.error('[GET /api/sessions]', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -69,7 +70,8 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json(newSession, { status: 201 });
-  } catch {
+  } catch (err) {
+    console.error('[POST /api/sessions]', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

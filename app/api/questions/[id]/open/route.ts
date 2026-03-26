@@ -3,6 +3,7 @@ import { auth } from '@/auth';
 import { connectDB } from '@/lib/db';
 import { pusher } from '@/lib/pusher';
 import Question from '@/models/Question';
+import Response from '@/models/Response';
 import Session from '@/models/Session';
 import User from '@/models/User';
 
@@ -57,17 +58,21 @@ export async function POST(
       currentQuestionId: id,
     });
 
+    const responseCount = await Response.countDocuments({ questionId: id });
+
     await pusher.trigger(`session-${voxSession.code}`, 'question:opened', {
       question: {
-        id: String(question._id),
+        _id: String(question._id),
         text: question.text,
         choices: question.choices,
         type: question.type,
       },
+      responseCount,
     });
 
     return NextResponse.json(updated);
-  } catch {
+  } catch (err) {
+    console.error('[POST /api/questions/[id]/open]', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
