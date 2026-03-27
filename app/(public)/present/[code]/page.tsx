@@ -24,9 +24,6 @@ interface OpenedPayload {
 interface RevealedPayload {
   results: AggregatedResult;
 }
-interface CountPayload {
-  count: number;
-}
 
 const ACCENT = "#00E5A0";
 const ACCENT_BLUE = "#0EA5E9";
@@ -106,10 +103,6 @@ export default function PresenterPage() {
       setResponseCount(0);
     });
 
-    channel.bind("response:count", (data: CountPayload) => {
-      setResponseCount(data.count);
-    });
-
     return () => {
       channel.unbind_all();
       client.unsubscribe(`session-${code.toUpperCase()}`);
@@ -138,7 +131,7 @@ export default function PresenterPage() {
     >
       {/* WAITING */}
       {state === "waiting" && (
-        <div className="flex flex-col items-center gap-10">
+        <div key="state-waiting" className="flex flex-col items-center gap-10" style={{ animation: 'var(--animate-fade-in-up)' }}>
           <div className="text-center">
             <p
               className="text-sm font-medium tracking-widest uppercase mb-3"
@@ -177,7 +170,7 @@ export default function PresenterPage() {
 
       {/* OPEN */}
       {state === "open" && question && (
-        <div className="w-full max-w-3xl flex flex-col items-center gap-12">
+        <div key={`state-open-${question._id}`} className="w-full max-w-3xl flex flex-col items-center gap-12" style={{ animation: 'var(--animate-fade-in-up)' }}>
           <p
             className="text-5xl font-bold text-center leading-tight"
             style={{
@@ -208,8 +201,9 @@ export default function PresenterPage() {
 
           <div className="flex flex-col items-center gap-2">
             <span
+              key={responseCount}
               className="text-7xl font-black"
-              style={{ fontFamily: "var(--font-mono)", color: ACCENT }}
+              style={{ fontFamily: "var(--font-mono)", color: ACCENT, animation: 'var(--animate-pulse-counter)' }}
             >
               {responseCount}
             </span>
@@ -225,7 +219,7 @@ export default function PresenterPage() {
 
       {/* REVEALED */}
       {state === "revealed" && question && results && (
-        <div className="w-full max-w-4xl flex flex-col items-center gap-10">
+        <div key={`state-revealed-${question._id}`} className="w-full max-w-4xl flex flex-col items-center gap-10" style={{ animation: 'var(--animate-fade-in-up)' }}>
           <p
             className="text-4xl font-bold text-center leading-tight"
             style={{

@@ -12,4 +12,6 @@ const QuestionSchema = new Schema<IQuestion>({
   revealedAt: { type: Date, default: null },
 });
 
+QuestionSchema.index({ sessionId: 1 });
+
 export default mongoose.models.Question ?? mongoose.model<IQuestion>('Question', QuestionSchema);
