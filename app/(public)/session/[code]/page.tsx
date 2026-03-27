@@ -3,7 +3,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { getPusherClient } from "@/lib/pusher-client";
+import { getOrCreateParticipantId, hasAnswered, markAnswered } from "@/lib/localStorage";
+import { usePusherChannel } from "@/hooks/usePusherChannel";
+import LoadingScreen from "@/components/shared/LoadingScreen";
+import ErrorCard from "@/components/shared/ErrorCard";
 import type { IQuestion, ISession } from "@/types";
 
 const API_ERROR_MESSAGES: Record<string, string> = {
@@ -13,23 +16,6 @@ const API_ERROR_MESSAGES: Record<string, string> = {
   "Session not found": "Session introuvable.",
 };
 
-function getOrCreateParticipantId(): string {
-  const key = "voxroom_participant_id";
-  let id = localStorage.getItem(key);
-  if (!id) {
-    id = crypto.randomUUID();
-    localStorage.setItem(key, id);
-  }
-  return id;
-}
-
-function hasAnswered(questionId: string): boolean {
-  return localStorage.getItem(`voxroom_answered_${questionId}`) === "1";
-}
-
-function markAnswered(questionId: string): void {
-  localStorage.setItem(`voxroom_answered_${questionId}`, "1");
-}
 
 export default function SessionPage() {
   const { code } = useParams<{ code: string }>();
@@ -80,12 +66,10 @@ export default function SessionPage() {
     load();
   }, [load]);
 
-  useEffect(() => {
-    const client = getPusherClient();
-    const channel = client.subscribe(`session-${code.toUpperCase()}`);
-
-    channel.bind("question:opened", (data: { question: IQuestion }) => {
-      const q = data.question as unknown as IQuestion;
+  usePusherChannel(`session-${code.toUpperCase()}`, {
+    'question:opened': (data) => {
+      const payload = data as { question: IQuestion };
+      const q = payload.question as unknown as IQuestion;
       setOpenQuestion(q);
       if (hasAnswered(String(q._id))) {
         setAlreadyAnswered(true);
@@ -93,27 +77,19 @@ export default function SessionPage() {
       } else {
         setAlreadyAnswered(false);
         setAnswered(false);
-        setSelected("");
-        setWordInput("");
+        setSelected('');
+        setWordInput('');
       }
-    });
-
-    channel.bind("question:closed", () => {
+    },
+    'question:closed': (_data) => {
       setOpenQuestion(null);
       setAnswered(false);
       setAlreadyAnswered(false);
-    });
-
-    channel.bind("session:closed", () => {
+    },
+    'session:closed': (_data) => {
       setSessionClosed(true);
-    });
-
-
-    return () => {
-      channel.unbind_all();
-      client.unsubscribe(`session-${code.toUpperCase()}`);
-    };
-  }, [code]);
+    },
+  });
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -160,44 +136,10 @@ export default function SessionPage() {
     }
   }
 
-  if (loading) {
-    return (
-      <main
-        className="min-h-screen flex items-center justify-center"
-        style={{ backgroundColor: "var(--color-bg-base)" }}
-      >
-        <p style={{ color: "var(--color-text-secondary)" }}>Chargement…</p>
-      </main>
-    );
-  }
+  if (loading) return <LoadingScreen />;
 
   if (error || !session) {
-    return (
-      <main
-        className="min-h-screen flex items-center justify-center p-6"
-        style={{ backgroundColor: "var(--color-bg-base)" }}
-      >
-        <div
-          className="w-full max-w-sm rounded-xl p-8 flex flex-col items-center gap-4 text-center"
-          style={{
-            backgroundColor: "var(--color-bg-surface)",
-            border: "1px solid var(--color-error)",
-          }}
-        >
-          <span className="text-3xl">⚠️</span>
-          <p className="font-medium" style={{ color: "var(--color-error)" }}>
-            {error || "Session introuvable."}
-          </p>
-          <Link
-            href="/join"
-            className="rounded-lg px-4 py-2 text-sm font-medium mt-2"
-            style={{ backgroundColor: "var(--color-accent)", color: "#0D1117" }}
-          >
-            Rejoindre une session
-          </Link>
-        </div>
-      </main>
-    );
+    return <ErrorCard message={error || "Session introuvable."} href="/join" linkText="Rejoindre une session" />;
   }
 
   if (sessionClosed) {

@@ -12,7 +12,7 @@ import {
   ResponsiveContainer,
   LabelList,
 } from "recharts";
-import { getPusherClient } from "@/lib/pusher-client";
+import { usePusherChannel } from "@/hooks/usePusherChannel";
 import type { IQuestion, ISession, AggregatedResult } from "@/types";
 
 type PresenterState = "waiting" | "open" | "revealed";
@@ -80,34 +80,26 @@ export default function PresenterPage() {
     setJoinUrl(`${window.location.origin}/session/${code}`);
   }, [load, code]);
 
-  useEffect(() => {
-    const client = getPusherClient();
-    const channel = client.subscribe(`session-${code.toUpperCase()}`);
-
-    channel.bind("question:opened", (data: OpenedPayload) => {
-      setQuestion(data.question);
-      setResponseCount(data.responseCount ?? 0);
+  usePusherChannel(`session-${code.toUpperCase()}`, {
+    'question:opened': (data) => {
+      const payload = data as OpenedPayload;
+      setQuestion(payload.question);
+      setResponseCount(payload.responseCount ?? 0);
       setResults(null);
       setState("open");
-    });
-
-    channel.bind("question:revealed", (data: RevealedPayload) => {
-      setResults(data.results);
+    },
+    'question:revealed': (data) => {
+      const payload = data as RevealedPayload;
+      setResults(payload.results);
       setState("revealed");
-    });
-
-    channel.bind("question:closed", () => {
+    },
+    'question:closed': (_data) => {
       setState("waiting");
       setQuestion(null);
       setResults(null);
       setResponseCount(0);
-    });
-
-    return () => {
-      channel.unbind_all();
-      client.unsubscribe(`session-${code.toUpperCase()}`);
-    };
-  }, [code]);
+    },
+  });
 
   const chartData = results
     ? Object.entries(results).map(([label, { count, percent }]) => ({
