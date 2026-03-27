@@ -3,7 +3,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { getPusherClient } from '@/lib/pusher-client';
+import { usePusherChannel } from '@/hooks/usePusherChannel';
+import LoadingScreen from '@/components/shared/LoadingScreen';
+import ErrorCard from '@/components/shared/ErrorCard';
 import type { IQuestion, ISession, AggregatedResult } from '@/types';
 
 const STATUS_LABEL: Record<string, string> = {
@@ -41,20 +43,13 @@ export default function ControlPage() {
 
   useEffect(() => { load(); }, [load]);
 
-  useEffect(() => {
-    const client = getPusherClient();
-    const channel = client.subscribe(`private-control-${code.toUpperCase()}`);
-
-    channel.bind('response:new', (data: { count: number; results: AggregatedResult }) => {
-      setLiveCount(data.count);
-      setLiveResults(data.results);
-    });
-
-    return () => {
-      channel.unbind_all();
-      client.unsubscribe(`private-control-${code.toUpperCase()}`);
-    };
-  }, [code]);
+  usePusherChannel(`private-control-${code.toUpperCase()}`, {
+    'response:new': (data) => {
+      const payload = data as { count: number; results: AggregatedResult };
+      setLiveCount(payload.count);
+      setLiveResults(payload.results);
+    },
+  });
 
   async function action(questionId: string, endpoint: 'open' | 'close' | 'reveal') {
     setActionLoading(`${questionId}-${endpoint}`);
@@ -66,35 +61,10 @@ export default function ControlPage() {
     }
   }
 
-  if (loading) {
-    return (
-      <main className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--color-bg-base)' }}>
-        <p style={{ color: 'var(--color-text-secondary)' }}>Chargement…</p>
-      </main>
-    );
-  }
+  if (loading) return <LoadingScreen />;
 
   if (error || !session) {
-    return (
-      <main className="min-h-screen flex items-center justify-center p-6" style={{ backgroundColor: 'var(--color-bg-base)' }}>
-        <div
-          className="w-full max-w-sm rounded-xl p-8 flex flex-col items-center gap-4 text-center"
-          style={{ backgroundColor: 'var(--color-bg-surface)', border: '1px solid var(--color-error)' }}
-        >
-          <span className="text-3xl">⚠️</span>
-          <p className="font-medium" style={{ color: 'var(--color-error)' }}>
-            {error || 'Session introuvable.'}
-          </p>
-          <Link
-            href="/dashboard"
-            className="rounded-lg px-4 py-2 text-sm font-medium mt-2"
-            style={{ backgroundColor: 'var(--color-accent)', color: '#0D1117' }}
-          >
-            Retour au tableau de bord
-          </Link>
-        </div>
-      </main>
-    );
+    return <ErrorCard message={error || 'Session introuvable.'} href="/dashboard" linkText="Retour au tableau de bord" />;
   }
 
   return (

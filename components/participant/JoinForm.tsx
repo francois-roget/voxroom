@@ -3,9 +3,9 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-interface JoinFormProps {
+type JoinFormProps = {
   compact?: boolean;
-}
+};
 
 export default function JoinForm({ compact = false }: JoinFormProps) {
   const router = useRouter();
