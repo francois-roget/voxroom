@@ -231,8 +231,8 @@ export default function PresenterPage() {
           </p>
 
           {question.type === "mcq" && chartData.length > 0 && (
-            <div className="w-full" style={{ height: 360 }}>
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="w-full">
+              <ResponsiveContainer width="100%" height={360}>
                 <BarChart
                   data={chartData}
                   layout="vertical"
