@@ -10,5 +10,6 @@ const ResponseSchema = new Schema<IResponse>({
 });
 
 ResponseSchema.index({ questionId: 1, participantId: 1 }, { unique: true });
+ResponseSchema.index({ sessionId: 1 });
 
 export default mongoose.models.Response ?? mongoose.model<IResponse>('Response', ResponseSchema);

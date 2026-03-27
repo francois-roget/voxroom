@@ -2,20 +2,45 @@ import { auth } from '@/auth';
 import { connectDB } from '@/lib/db';
 import User from '@/models/User';
 import Session from '@/models/Session';
+import Question from '@/models/Question';
 import Link from 'next/link';
 import type { ISession } from '@/types';
+import type { Types } from 'mongoose';
+
+interface SessionWithStats extends ISession {
+  questionCount: number;
+}
+
+const STATUS_LABEL: Record<string, string> = {
+  waiting: 'En attente',
+  active: 'En cours',
+  closed: 'Terminée',
+};
 
 export default async function DashboardPage() {
   const session = await auth();
 
-  let sessions: ISession[] = [];
+  let sessions: SessionWithStats[] = [];
   if (session?.user?.email) {
     await connectDB();
-    const dbUser = await User.findOne({ email: session.user.email }).lean() as { _id: unknown } | null;
+    const dbUser = await User.findOne({ email: session.user.email }).lean() as { _id: Types.ObjectId } | null;
     if (dbUser) {
-      sessions = await Session.find({ ownerId: dbUser._id })
+      const rawSessions = await Session.find({ ownerId: dbUser._id })
         .sort({ createdAt: -1 })
         .lean() as unknown as ISession[];
+
+      const sessionIds = rawSessions.map((s) => s._id);
+      const questionCounts = await Question.aggregate([
+        { $match: { sessionId: { $in: sessionIds } } },
+        { $group: { _id: '$sessionId', count: { $sum: 1 } } },
+      ]) as { _id: unknown; count: number }[];
+
+      const countMap = new Map(questionCounts.map((q) => [String(q._id), q.count]));
+
+      sessions = rawSessions.map((s) => ({
+        ...s,
+        questionCount: countMap.get(String(s._id)) ?? 0,
+      }));
     }
   }
 
@@ -64,11 +89,43 @@ export default async function DashboardPage() {
                   <span className="font-medium" style={{ color: 'var(--color-text-primary)' }}>
                     {s.name}
                   </span>
-                  <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-                    Créée le {new Date(s.createdAt).toLocaleDateString('fr-FR')}
-                  </span>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                      Créée le {new Date(s.createdAt).toLocaleDateString('fr-FR')}
+                    </span>
+                    <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>·</span>
+                    <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                      {s.questionCount === 1 ? '1 question' : `${s.questionCount} questions`}
+                    </span>
+                  </div>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
+                  <span
+                    className="text-xs px-2 py-0.5 rounded-full"
+                    style={{
+                      backgroundColor:
+                        s.status === 'active'
+                          ? 'rgba(0,229,160,0.15)'
+                          : s.status === 'closed'
+                          ? 'rgba(248,81,73,0.15)'
+                          : 'var(--color-bg-elevated)',
+                      color:
+                        s.status === 'active'
+                          ? 'var(--color-accent)'
+                          : s.status === 'closed'
+                          ? 'var(--color-error)'
+                          : 'var(--color-text-muted)',
+                      border: `1px solid ${
+                        s.status === 'active'
+                          ? 'var(--color-accent)'
+                          : s.status === 'closed'
+                          ? 'var(--color-error)'
+                          : 'var(--color-border)'
+                      }`,
+                    }}
+                  >
+                    {STATUS_LABEL[s.status] ?? s.status}
+                  </span>
                   <span
                     className="font-bold tracking-widest text-lg"
                     style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-accent)' }}

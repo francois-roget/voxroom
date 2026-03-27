@@ -33,6 +33,7 @@
   --animate-pulse-counter: pulse-counter 300ms ease-out;
   --animate-glow-pulse: glow-pulse 3s ease-in-out infinite;
   --animate-pulse-confirm: pulse-confirm 400ms ease-out;
+  --animate-fade-in-up: fade-in-up 500ms ease-out both;
 }
 
 @keyframes pulse-counter {
@@ -51,15 +52,23 @@
   100% { transform: scale(1); }
 }
 
-:root {
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+html, body {
   background-color: var(--color-bg-base);
   color: var(--color-text-primary);
   font-family: var(--font-body);
 }
 
 body {
-  background-color: var(--color-bg-base);
-  color: var(--color-text-primary);
-  font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
 }
