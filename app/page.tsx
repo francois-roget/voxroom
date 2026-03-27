@@ -20,22 +20,13 @@ export default async function Home() {
 
         {/* Hero */}
         <div className="text-center flex flex-col items-center gap-6">
-          <div
-            className="rounded-3xl p-4"
-            style={{
-              backgroundColor: 'var(--color-bg-surface)',
-              border: '1px solid var(--color-border)',
-              boxShadow: '0 0 40px var(--color-accent-glow)',
-            }}
-          >
-            <Image
-              src="/logo.png"
-              alt="VoxRoom logo"
-              width={96}
-              height={96}
-              priority
-            />
-          </div>
+          <Image
+            src="/logo-hd.webp"
+            alt="VoxRoom logo"
+            width={160}
+            height={160}
+            priority
+          />
           <h1
             className="text-6xl font-black tracking-tight"
             style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)' }}
