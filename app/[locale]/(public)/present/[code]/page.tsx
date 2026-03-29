@@ -12,6 +12,7 @@ import {
   ResponsiveContainer,
   LabelList,
 } from "recharts";
+import { useTranslations } from "next-intl";
 import { usePusherChannel } from "@/hooks/usePusherChannel";
 import type { IQuestion, ISession, AggregatedResult } from "@/types";
 
@@ -32,6 +33,7 @@ const SURFACE = "#161B22";
 
 export default function PresenterPage() {
   const { code } = useParams<{ code: string }>();
+  const t = useTranslations("present");
 
   const [session, setSession] = useState<ISession | null>(null);
   const [state, setState] = useState<PresenterState>("waiting");
@@ -129,7 +131,7 @@ export default function PresenterPage() {
               className="text-sm font-medium tracking-widest uppercase mb-3"
               style={{ color: "var(--color-text-muted)" }}
             >
-              Rejoins la session
+              {t("joinSession")}
             </p>
             <div
               className="text-8xl font-black tracking-widest"
@@ -155,7 +157,7 @@ export default function PresenterPage() {
           )}
 
           <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
-            En attente du formateur…
+            {t("waitingForPresenter")}
           </p>
         </div>
       )}
@@ -203,7 +205,7 @@ export default function PresenterPage() {
               className="text-lg"
               style={{ color: "var(--color-text-secondary)" }}
             >
-              {responseCount === 1 ? "réponse" : "réponses"}
+              {t("responseCount", { count: responseCount })}
             </span>
           </div>
         </div>

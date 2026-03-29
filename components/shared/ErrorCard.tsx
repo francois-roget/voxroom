@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 
 type ErrorCardProps = {
   message?: string;
@@ -6,7 +6,7 @@ type ErrorCardProps = {
   linkText: string;
 };
 
-export default function ErrorCard({ message = 'Session introuvable.', href, linkText }: ErrorCardProps) {
+export default function ErrorCard({ message = '', href, linkText }: ErrorCardProps) {
   return (
     <main
       className="min-h-screen flex items-center justify-center p-6"

@@ -1,6 +1,12 @@
 import { signIn } from '@/auth';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-export default function LoginPage() {
+export default async function LoginPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+
+  const t = await getTranslations('auth');
+
   return (
     <main className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--color-bg-base)' }}>
       <div
@@ -11,13 +17,13 @@ export default function LoginPage() {
           <h1 className="text-3xl font-bold" style={{ fontFamily: 'var(--font-display)', color: 'var(--color-accent)' }}>
             VoxRoom
           </h1>
-          <p style={{ color: 'var(--color-text-secondary)' }}>Live polling pour formateurs</p>
+          <p style={{ color: 'var(--color-text-secondary)' }}>{t('subtitle')}</p>
         </div>
 
         <form
           action={async () => {
             'use server';
-            await signIn('google', { redirectTo: '/dashboard' });
+            await signIn('google', { redirectTo: locale === 'en' ? '/dashboard' : `/${locale}/dashboard` });
           }}
           className="w-full"
         >
@@ -48,7 +54,7 @@ export default function LoginPage() {
                 fill="#EA4335"
               />
             </svg>
-            Se connecter avec Google
+            {t('signInWithGoogle')}
           </button>
         </form>
       </div>

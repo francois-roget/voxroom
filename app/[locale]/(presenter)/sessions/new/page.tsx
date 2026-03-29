@@ -1,10 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 
 export default function NewSessionPage() {
   const router = useRouter();
+  const t = useTranslations('sessions.new');
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -25,14 +27,14 @@ export default function NewSessionPage() {
 
       if (!res.ok) {
         const data = await res.json();
-        setError(data.error ?? 'Une erreur est survenue.');
+        setError(data.error ?? t('genericError'));
         return;
       }
 
       router.push('/dashboard');
       router.refresh();
     } catch {
-      setError('Impossible de créer la session.');
+      setError(t('networkError'));
     } finally {
       setLoading(false);
     }
@@ -46,24 +48,24 @@ export default function NewSessionPage() {
       >
         <div>
           <h1 className="text-xl font-bold" style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)' }}>
-            Nouvelle session
+            {t('title')}
           </h1>
           <p className="text-sm mt-1" style={{ color: 'var(--color-text-secondary)' }}>
-            Un code court sera généré automatiquement.
+            {t('subtitle')}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
             <label htmlFor="name" className="text-sm font-medium" style={{ color: 'var(--color-text-secondary)' }}>
-              Nom de la session
+              {t('nameLabel')}
             </label>
             <input
               id="name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="ex : Formation React — Avril"
+              placeholder={t('namePlaceholder')}
               required
               className="rounded-lg px-4 py-3 text-sm outline-none transition-colors"
               style={{
@@ -91,7 +93,7 @@ export default function NewSessionPage() {
                 color: 'var(--color-text-secondary)',
               }}
             >
-              Annuler
+              {t('cancelButton')}
             </button>
             <button
               type="submit"
@@ -99,7 +101,7 @@ export default function NewSessionPage() {
               className="flex-1 rounded-lg px-4 py-3 text-sm font-medium transition-opacity disabled:opacity-50"
               style={{ backgroundColor: 'var(--color-accent)', color: '#0D1117' }}
             >
-              {loading ? 'Création…' : 'Créer'}
+              {loading ? t('creatingButton') : t('createButton')}
             </button>
           </div>
         </form>

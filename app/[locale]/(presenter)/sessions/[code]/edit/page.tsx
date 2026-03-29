@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import type { IQuestion, ISession } from "@/types";
 
 type QuestionType = "mcq" | "wordcloud";
@@ -9,6 +11,7 @@ type QuestionType = "mcq" | "wordcloud";
 export default function EditSessionPage() {
   const { code } = useParams<{ code: string }>();
   const router = useRouter();
+  const t = useTranslations("sessions.edit");
 
   const [session, setSession] = useState<ISession | null>(null);
   const [questions, setQuestions] = useState<IQuestion[]>([]);
@@ -28,20 +31,20 @@ export default function EditSessionPage() {
       try {
         const res = await fetch(`/api/sessions/${code}`);
         if (!res.ok) {
-          setError("Session introuvable.");
+          setError(t("sessionNotFound"));
           return;
         }
         const data = await res.json();
         setSession(data.session);
         setQuestions(data.questions);
       } catch {
-        setError("Erreur de chargement.");
+        setError(t("loadingError"));
       } finally {
         setLoading(false);
       }
     }
     load();
-  }, [code]);
+  }, [code, t]);
 
   async function handleAddQuestion(e: React.FormEvent) {
     e.preventDefault();
@@ -50,7 +53,7 @@ export default function EditSessionPage() {
 
     const choices = newChoices.map((c) => c.trim()).filter(Boolean);
     if (addingType === "mcq" && choices.length < 2) {
-      setFormError("Ajoutez au moins 2 choix.");
+      setFormError(t("minChoicesError"));
       return;
     }
 
@@ -69,7 +72,7 @@ export default function EditSessionPage() {
 
       if (!res.ok) {
         const data = await res.json();
-        setFormError(data.error ?? "Erreur lors de la création.");
+        setFormError(data.error ?? t("createError"));
         return;
       }
 
@@ -78,7 +81,7 @@ export default function EditSessionPage() {
       setNewText("");
       setNewChoices(["", "", "", ""]);
     } catch {
-      setFormError("Impossible de créer la question.");
+      setFormError(t("networkError"));
     } finally {
       setSubmitting(false);
     }
@@ -101,7 +104,7 @@ export default function EditSessionPage() {
         className="min-h-screen flex items-center justify-center"
         style={{ backgroundColor: "var(--color-bg-base)" }}
       >
-        <p style={{ color: "var(--color-text-secondary)" }}>Chargement…</p>
+        <p style={{ color: "var(--color-text-secondary)" }}>{t("loading")}</p>
       </main>
     );
   }
@@ -113,7 +116,7 @@ export default function EditSessionPage() {
         style={{ backgroundColor: "var(--color-bg-base)" }}
       >
         <p style={{ color: "var(--color-error)" }}>
-          {error || "Session introuvable."}
+          {error || t("sessionNotFound")}
         </p>
       </main>
     );
@@ -156,7 +159,7 @@ export default function EditSessionPage() {
                 color: "#0D1117",
               }}
             >
-              Contrôle →
+              {t("controlButton")}
             </button>
             <button
               onClick={() => router.push("/dashboard")}
@@ -167,7 +170,7 @@ export default function EditSessionPage() {
                 color: "var(--color-text-secondary)",
               }}
             >
-              Dashboard
+              {t("dashboardButton")}
             </button>
           </div>
         </div>
@@ -183,7 +186,7 @@ export default function EditSessionPage() {
               }}
             >
               <p style={{ color: "var(--color-text-secondary)" }}>
-                Aucune question pour l&apos;instant.
+                {t("noQuestions")}
               </p>
             </div>
           )}
@@ -215,8 +218,8 @@ export default function EditSessionPage() {
                     style={{ color: "var(--color-text-muted)" }}
                   >
                     {q.type === "mcq"
-                      ? `MCQ — ${q.choices.join(", ")}`
-                      : "Nuage de mots"}
+                      ? t("mcqLabel", { choices: q.choices.join(", ") })
+                      : t("wordcloudLabel")}
                   </span>
                 </div>
               </div>
@@ -227,14 +230,14 @@ export default function EditSessionPage() {
                     className="text-xs px-3 py-1 rounded-lg font-medium"
                     style={{ backgroundColor: "var(--color-error)", color: "#fff" }}
                   >
-                    Confirmer
+                    {t("confirm")}
                   </button>
                   <button
                     onClick={() => setConfirmDeleteId(null)}
                     className="text-xs px-3 py-1 rounded-lg"
                     style={{ border: "1px solid var(--color-border)", color: "var(--color-text-secondary)" }}
                   >
-                    Annuler
+                    {t("cancel")}
                   </button>
                 </div>
               ) : (
@@ -246,7 +249,7 @@ export default function EditSessionPage() {
                     border: "1px solid var(--color-error)",
                   }}
                 >
-                  Suppr.
+                  {t("delete")}
                 </button>
               )}
             </div>
@@ -265,19 +268,19 @@ export default function EditSessionPage() {
             className="text-base font-bold"
             style={{ color: "var(--color-text-primary)" }}
           >
-            Ajouter une question
+            {t("addTitle")}
           </h2>
 
           {/* Type selector */}
           <div className="flex gap-2">
-            {(["mcq", "wordcloud"] as QuestionType[]).map((t) => (
+            {(["mcq", "wordcloud"] as QuestionType[]).map((type) => (
               <button
-                key={t}
+                key={type}
                 type="button"
-                onClick={() => setAddingType(t)}
+                onClick={() => setAddingType(type)}
                 className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                 style={
-                  addingType === t
+                  addingType === type
                     ? {
                         backgroundColor: "var(--color-accent)",
                         color: "#0D1117",
@@ -289,7 +292,7 @@ export default function EditSessionPage() {
                       }
                 }
               >
-                {t === "mcq" ? "QCM" : "Nuage de mots"}
+                {type === "mcq" ? t("typeMcq") : t("typeWordcloud")}
               </button>
             ))}
           </div>
@@ -300,13 +303,13 @@ export default function EditSessionPage() {
                 className="text-sm font-medium"
                 style={{ color: "var(--color-text-secondary)" }}
               >
-                Question
+                {t("questionLabel")}
               </label>
               <input
                 type="text"
                 value={newText}
                 onChange={(e) => setNewText(e.target.value)}
-                placeholder="ex : Quelle est votre techno préférée ?"
+                placeholder={t("questionPlaceholder")}
                 required
                 className="rounded-lg px-4 py-3 text-sm outline-none"
                 style={{
@@ -323,7 +326,7 @@ export default function EditSessionPage() {
                   className="text-sm font-medium"
                   style={{ color: "var(--color-text-secondary)" }}
                 >
-                  Choix (min. 2)
+                  {t("choicesLabel")}
                 </label>
                 {newChoices.map((c, i) => (
                   <input
@@ -335,7 +338,7 @@ export default function EditSessionPage() {
                       updated[i] = e.target.value;
                       setNewChoices(updated);
                     }}
-                    placeholder={`Choix ${i + 1}`}
+                    placeholder={t("choicePlaceholder", { number: i + 1 })}
                     className="rounded-lg px-4 py-2 text-sm outline-none"
                     style={{
                       backgroundColor: "var(--color-bg-elevated)",
@@ -362,7 +365,7 @@ export default function EditSessionPage() {
                 color: "#0D1117",
               }}
             >
-              {submitting ? "Ajout…" : "+ Ajouter"}
+              {submitting ? t("addingButton") : t("addButton")}
             </button>
           </form>
         </div>

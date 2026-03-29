@@ -2,23 +2,24 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { getOrCreateParticipantId, hasAnswered, markAnswered } from "@/lib/localStorage";
 import { usePusherChannel } from "@/hooks/usePusherChannel";
 import LoadingScreen from "@/components/shared/LoadingScreen";
 import ErrorCard from "@/components/shared/ErrorCard";
 import type { IQuestion, ISession } from "@/types";
 
-const API_ERROR_MESSAGES: Record<string, string> = {
-  "Question is not open": "Cette question n'est plus ouverte.",
-  "Question not found": "Question introuvable.",
-  "Already answered": "Tu as déjà répondu à cette question.",
-  "Session not found": "Session introuvable.",
+const API_ERROR_KEYS: Record<string, string> = {
+  "Question is not open": "errors.questionNotOpen",
+  "Question not found": "errors.questionNotFound",
+  "Already answered": "errors.alreadyAnswered",
+  "Session not found": "errors.sessionNotFound",
 };
-
 
 export default function SessionPage() {
   const { code } = useParams<{ code: string }>();
+  const t = useTranslations("session");
 
   const [session, setSession] = useState<ISession | null>(null);
   const [openQuestion, setOpenQuestion] = useState<IQuestion | null>(null);
@@ -37,7 +38,7 @@ export default function SessionPage() {
     try {
       const res = await fetch(`/api/sessions/${code}`);
       if (!res.ok) {
-        setError("Session introuvable.");
+        setError(t("errors.sessionNotFound"));
         return;
       }
       const data = await res.json();
@@ -56,11 +57,11 @@ export default function SessionPage() {
         setAnswered(false);
       }
     } catch {
-      setError("Erreur de chargement.");
+      setError(t("errors.generic"));
     } finally {
       setLoading(false);
     }
-  }, [code]);
+  }, [code, t]);
 
   useEffect(() => {
     load();
@@ -123,14 +124,15 @@ export default function SessionPage() {
       if (!res.ok) {
         const data = await res.json();
         const rawError = data.error ?? "";
-        setSubmitError(API_ERROR_MESSAGES[rawError] ?? rawError ?? "Erreur lors de la soumission.");
+        const key = API_ERROR_KEYS[rawError];
+        setSubmitError(key ? t(key as Parameters<typeof t>[0]) : (rawError || t("errors.generic")));
         return;
       }
 
       markAnswered(String(openQuestion._id));
       setAnswered(true);
     } catch {
-      setSubmitError("Impossible d'envoyer la réponse.");
+      setSubmitError(t("errors.submitError"));
     } finally {
       setSubmitting(false);
     }
@@ -139,7 +141,7 @@ export default function SessionPage() {
   if (loading) return <LoadingScreen />;
 
   if (error || !session) {
-    return <ErrorCard message={error || "Session introuvable."} href="/join" linkText="Rejoindre une session" />;
+    return <ErrorCard message={error || t("errors.sessionNotFound")} href="/join" linkText={t("joinSession")} />;
   }
 
   if (sessionClosed) {
@@ -160,10 +162,10 @@ export default function SessionPage() {
             className="font-medium"
             style={{ color: "var(--color-text-primary)" }}
           >
-            Cette session est terminée.
+            {t("sessionClosed")}
           </p>
           <p className="text-sm" style={{ color: "var(--color-text-secondary)" }}>
-            Merci pour ta participation !
+            {t("thankYou")}
           </p>
           <Link
             href="/join"
@@ -174,7 +176,7 @@ export default function SessionPage() {
               color: "var(--color-text-secondary)",
             }}
           >
-            Rejoindre une autre session
+            {t("joinAnother")}
           </Link>
         </div>
       </main>
@@ -219,7 +221,7 @@ export default function SessionPage() {
               className="text-sm"
               style={{ color: "var(--color-text-secondary)" }}
             >
-              En attente d&apos;une question…
+              {t("waitingForQuestion")}
             </p>
             <button
               onClick={load}
@@ -229,7 +231,7 @@ export default function SessionPage() {
                 border: "1px solid var(--color-border)",
               }}
             >
-              Actualiser
+              {t("refresh")}
             </button>
           </div>
         )}
@@ -253,13 +255,13 @@ export default function SessionPage() {
               </svg>
             </div>
             <p className="font-medium" style={{ color: "var(--color-accent)" }}>
-              Réponse envoyée !
+              {t("responseSent")}
             </p>
             <p
               className="text-sm"
               style={{ color: "var(--color-text-secondary)" }}
             >
-              En attente des résultats…
+              {t("waitingForResults")}
             </p>
           </div>
         )}
@@ -285,10 +287,10 @@ export default function SessionPage() {
               className="font-medium"
               style={{ color: "var(--color-text-secondary)" }}
             >
-              Tu as déjà répondu.
+              {t("alreadyAnswered")}
             </p>
             <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
-              En attente des résultats…
+              {t("waitingForResults")}
             </p>
           </div>
         )}
@@ -345,7 +347,7 @@ export default function SessionPage() {
                   type="text"
                   value={wordInput}
                   onChange={(e) => setWordInput(e.target.value)}
-                  placeholder="Ton mot…"
+                  placeholder={t("wordPlaceholder")}
                   maxLength={50}
                   required
                   autoComplete="off"
@@ -384,7 +386,7 @@ export default function SessionPage() {
                   color: "#0D1117",
                 }}
               >
-                {submitting ? "Envoi…" : "Envoyer"}
+                {submitting ? t("submittingButton") : t("submitButton")}
               </button>
             </form>
           </div>
