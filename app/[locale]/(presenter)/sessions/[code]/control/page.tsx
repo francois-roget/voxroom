@@ -2,21 +2,23 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 import { usePusherChannel } from '@/hooks/usePusherChannel';
 import LoadingScreen from '@/components/shared/LoadingScreen';
 import ErrorCard from '@/components/shared/ErrorCard';
 import type { IQuestion, ISession, AggregatedResult } from '@/types';
 
-const STATUS_LABEL: Record<string, string> = {
-  pending: 'En attente',
-  open: 'Ouverte',
-  revealed: 'Résultats révélés',
-  closed: 'Fermée',
-};
-
 export default function ControlPage() {
   const { code } = useParams<{ code: string }>();
+  const t = useTranslations('sessions.control');
+
+  const STATUS_LABEL: Record<string, string> = {
+    pending: t('statusPending'),
+    open: t('statusOpen'),
+    revealed: t('statusRevealed'),
+    closed: t('statusClosed'),
+  };
 
   const [session, setSession] = useState<ISession | null>(null);
   const [questions, setQuestions] = useState<IQuestion[]>([]);
@@ -29,17 +31,17 @@ export default function ControlPage() {
   const load = useCallback(async () => {
     try {
       const res = await fetch(`/api/sessions/${code}`);
-      if (!res.ok) { setError('Session introuvable.'); return; }
+      if (!res.ok) { setError(t('sessionNotFound')); return; }
       const data = await res.json();
       setSession(data.session);
       setQuestions(data.questions);
       setLiveCount(data.responseCount ?? 0);
     } catch {
-      setError('Erreur de chargement.');
+      setError(t('loadingError'));
     } finally {
       setLoading(false);
     }
-  }, [code]);
+  }, [code, t]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -64,8 +66,15 @@ export default function ControlPage() {
   if (loading) return <LoadingScreen />;
 
   if (error || !session) {
-    return <ErrorCard message={error || 'Session introuvable.'} href="/dashboard" linkText="Retour au tableau de bord" />;
+    return <ErrorCard message={error || t('sessionNotFound')} href="/dashboard" linkText={t('backToDashboard')} />;
   }
+
+  const sessionStatusLabel =
+    session.status === 'active'
+      ? t('sessionStatusActive')
+      : session.status === 'waiting'
+      ? t('sessionStatusWaiting')
+      : t('sessionStatusClosed');
 
   return (
     <main className="min-h-screen p-8" style={{ backgroundColor: 'var(--color-bg-base)' }}>
@@ -85,7 +94,7 @@ export default function ControlPage() {
                 color: session.status === 'active' ? 'var(--color-accent)' : 'var(--color-text-muted)',
                 border: `1px solid ${session.status === 'active' ? 'var(--color-accent)' : 'var(--color-border)'}`,
               }}>
-                {session.status === 'active' ? 'En cours' : session.status === 'waiting' ? 'En attente' : 'Fermée'}
+                {sessionStatusLabel}
               </span>
             </div>
           </div>
@@ -94,7 +103,7 @@ export default function ControlPage() {
             className="rounded-lg px-4 py-2 text-sm font-medium"
             style={{ backgroundColor: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', color: 'var(--color-text-secondary)' }}
           >
-            ← Éditer
+            {t('editButton')}
           </Link>
         </div>
 
@@ -104,7 +113,7 @@ export default function ControlPage() {
             className="rounded-xl p-8 text-center"
             style={{ backgroundColor: 'var(--color-bg-surface)', border: '1px solid var(--color-border)' }}
           >
-            <p style={{ color: 'var(--color-text-secondary)' }}>Aucune question. Ajoutez-en depuis la page d&apos;édition.</p>
+            <p style={{ color: 'var(--color-text-secondary)' }}>{t('noQuestions')}</p>
           </div>
         ) : (
           <div className="flex flex-col gap-4">
@@ -132,7 +141,7 @@ export default function ControlPage() {
                       <div className="flex flex-col gap-1">
                         <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>{q.text}</span>
                         <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-                          {q.type === 'mcq' ? `QCM — ${q.choices.join(', ')}` : 'Nuage de mots'}
+                          {q.type === 'mcq' ? t('mcqLabel', { choices: q.choices.join(', ') }) : t('wordcloudLabel')}
                         </span>
                       </div>
                     </div>
@@ -158,7 +167,7 @@ export default function ControlPage() {
                         {liveCount}
                       </span>
                       <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                        {liveCount === 1 ? 'réponse' : 'réponses'}
+                        {t('responseCount', { count: liveCount })}
                       </span>
                     </div>
                   )}
@@ -172,7 +181,7 @@ export default function ControlPage() {
                         className="px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50"
                         style={{ backgroundColor: 'var(--color-accent)', color: '#0D1117' }}
                       >
-                        {actionLoading === `${q._id}-open` ? '…' : 'Lancer'}
+                        {actionLoading === `${q._id}-open` ? '…' : t('launchButton')}
                       </button>
                     )}
                     {isOpen && (
@@ -183,7 +192,7 @@ export default function ControlPage() {
                           className="px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50"
                           style={{ backgroundColor: 'var(--color-accent-blue)', color: '#fff' }}
                         >
-                          {actionLoading === `${q._id}-reveal` ? '…' : 'Révéler'}
+                          {actionLoading === `${q._id}-reveal` ? '…' : t('revealButton')}
                         </button>
                         <button
                           onClick={() => action(String(q._id), 'close')}
@@ -191,7 +200,7 @@ export default function ControlPage() {
                           className="px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50"
                           style={{ backgroundColor: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', color: 'var(--color-text-secondary)' }}
                         >
-                          {actionLoading === `${q._id}-close` ? '…' : 'Fermer'}
+                          {actionLoading === `${q._id}-close` ? '…' : t('closeButton')}
                         </button>
                       </>
                     )}
@@ -202,7 +211,7 @@ export default function ControlPage() {
                         className="px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50"
                         style={{ backgroundColor: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', color: 'var(--color-text-secondary)' }}
                       >
-                        {actionLoading === `${q._id}-close` ? '…' : 'Fermer'}
+                        {actionLoading === `${q._id}-close` ? '…' : t('closeButton')}
                       </button>
                     )}
                   </div>

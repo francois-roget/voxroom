@@ -1,0 +1,133 @@
+{
+  "common": {
+    "loading": "Chargement…",
+    "sessionNotFound": "Session introuvable.",
+    "loadingError": "Erreur de chargement.",
+    "backToDashboard": "Retour au tableau de bord"
+  },
+  "landing": {
+    "heroDescription": "Le live polling simple et instantané pour vos formations. Posez des questions, récoltez des réponses en temps réel.",
+    "featureLiveTitle": "Questions en direct",
+    "featureLiveDesc": "QCM et nuages de mots, lancés en un clic depuis votre panneau de contrôle.",
+    "featureNoSignupTitle": "Sans inscription",
+    "featureNoSignupDesc": "Vos participants rejoignent avec un simple code à 4 caractères. Aucun compte requis.",
+    "featureRealtimeTitle": "Résultats en temps réel",
+    "featureRealtimeDesc": "Graphiques et nuages de mots s'affichent instantanément sur le vidéoprojecteur.",
+    "joinSession": "Rejoindre une session",
+    "scanToJoin": "Ou scanne pour rejoindre",
+    "trainerQuestion": "Vous êtes formateur ?",
+    "trainerDescription": "Créez vos sessions, gérez vos questions et pilotez vos présentations depuis un tableau de bord dédié.",
+    "signInWithGoogle": "Se connecter avec Google"
+  },
+  "join": {
+    "title": "VoxRoom",
+    "subtitle": "Entre le code de ta session",
+    "codeLengthError": "Le code fait 4 caractères.",
+    "sessionNotFound": "Session introuvable. Vérifie le code.",
+    "networkError": "Impossible de rejoindre la session.",
+    "submitButton": "Rejoindre",
+    "loadingButton": "Vérification…"
+  },
+  "session": {
+    "waitingForQuestion": "En attente d'une question…",
+    "refresh": "Actualiser",
+    "responseSent": "Réponse envoyée !",
+    "waitingForResults": "En attente des résultats…",
+    "alreadyAnswered": "Tu as déjà répondu.",
+    "submitButton": "Envoyer",
+    "submittingButton": "Envoi…",
+    "wordPlaceholder": "Ton mot…",
+    "sessionClosed": "Cette session est terminée.",
+    "thankYou": "Merci pour ta participation !",
+    "joinAnother": "Rejoindre une autre session",
+    "joinSession": "Rejoindre une session",
+    "errors": {
+      "questionNotOpen": "Cette question n'est plus ouverte.",
+      "questionNotFound": "Question introuvable.",
+      "alreadyAnswered": "Tu as déjà répondu à cette question.",
+      "sessionNotFound": "Session introuvable.",
+      "submitError": "Impossible d'envoyer la réponse.",
+      "generic": "Erreur lors de la soumission."
+    }
+  },
+  "present": {
+    "joinSession": "Rejoins la session",
+    "waitingForPresenter": "En attente du formateur…",
+    "responseCount": "{count, plural, one {# réponse} other {# réponses}}"
+  },
+  "dashboard": {
+    "title": "Mes sessions",
+    "newSession": "+ Nouvelle session",
+    "emptyTitle": "Aucune session pour l'instant.",
+    "emptyDescription": "Créez votre première session pour commencer.",
+    "createdOn": "Créée le {date}",
+    "questionCount": "{count, plural, one {# question} other {# questions}}",
+    "statusWaiting": "En attente",
+    "statusActive": "En cours",
+    "statusClosed": "Terminée",
+    "editButton": "Éditer",
+    "controlButton": "Contrôle"
+  },
+  "sessions": {
+    "new": {
+      "title": "Nouvelle session",
+      "subtitle": "Un code court sera généré automatiquement.",
+      "nameLabel": "Nom de la session",
+      "namePlaceholder": "ex : Formation React — Avril",
+      "cancelButton": "Annuler",
+      "createButton": "Créer",
+      "creatingButton": "Création…",
+      "genericError": "Une erreur est survenue.",
+      "networkError": "Impossible de créer la session."
+    },
+    "edit": {
+      "loading": "Chargement…",
+      "sessionNotFound": "Session introuvable.",
+      "loadingError": "Erreur de chargement.",
+      "controlButton": "Contrôle →",
+      "dashboardButton": "Dashboard",
+      "noQuestions": "Aucune question pour l'instant.",
+      "confirm": "Confirmer",
+      "cancel": "Annuler",
+      "delete": "Suppr.",
+      "addTitle": "Ajouter une question",
+      "typeMcq": "QCM",
+      "typeWordcloud": "Nuage de mots",
+      "questionLabel": "Question",
+      "questionPlaceholder": "ex : Quelle est votre techno préférée ?",
+      "choicesLabel": "Choix (min. 2)",
+      "choicePlaceholder": "Choix {number}",
+      "minChoicesError": "Ajoutez au moins 2 choix.",
+      "createError": "Erreur lors de la création.",
+      "networkError": "Impossible de créer la question.",
+      "addButton": "+ Ajouter",
+      "addingButton": "Ajout…",
+      "mcqLabel": "QCM — {choices}",
+      "wordcloudLabel": "Nuage de mots"
+    },
+    "control": {
+      "statusPending": "En attente",
+      "statusOpen": "Ouverte",
+      "statusRevealed": "Résultats révélés",
+      "statusClosed": "Fermée",
+      "sessionNotFound": "Session introuvable.",
+      "loadingError": "Erreur de chargement.",
+      "backToDashboard": "Retour au tableau de bord",
+      "editButton": "← Éditer",
+      "sessionStatusActive": "En cours",
+      "sessionStatusWaiting": "En attente",
+      "sessionStatusClosed": "Fermée",
+      "noQuestions": "Aucune question. Ajoutez-en depuis la page d'édition.",
+      "responseCount": "{count, plural, one {# réponse} other {# réponses}}",
+      "launchButton": "Lancer",
+      "revealButton": "Révéler",
+      "closeButton": "Fermer",
+      "mcqLabel": "QCM — {choices}",
+      "wordcloudLabel": "Nuage de mots"
+    }
+  },
+  "auth": {
+    "subtitle": "Live polling pour formateurs",
+    "signInWithGoogle": "Se connecter avec Google"
+  }
+}

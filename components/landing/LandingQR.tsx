@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
+import { useTranslations } from 'next-intl';
 
 export default function LandingQR() {
   const [joinUrl, setJoinUrl] = useState('');
+  const t = useTranslations('landing');
 
   useEffect(() => {
     setJoinUrl(`${window.location.origin}/join`);
@@ -13,7 +15,7 @@ export default function LandingQR() {
   return (
     <div className="flex flex-col items-center gap-3">
       <p className="text-sm text-center" style={{ color: 'var(--color-text-secondary)' }}>
-        Ou scanne pour rejoindre
+        {t('scanToJoin')}
       </p>
       <div className="p-4 rounded-2xl" style={{ backgroundColor: '#ffffff' }}>
         <QRCodeSVG value={joinUrl} size={140} />

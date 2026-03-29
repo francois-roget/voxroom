@@ -1,0 +1,133 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "sessionNotFound": "Session not found.",
+    "loadingError": "Loading error.",
+    "backToDashboard": "Back to dashboard"
+  },
+  "landing": {
+    "heroDescription": "Simple and instant live polling for your training sessions. Ask questions, collect answers in real time.",
+    "featureLiveTitle": "Live questions",
+    "featureLiveDesc": "MCQ and word clouds, launched in one click from your control panel.",
+    "featureNoSignupTitle": "No registration",
+    "featureNoSignupDesc": "Participants join with a simple 4-character code. No account required.",
+    "featureRealtimeTitle": "Real-time results",
+    "featureRealtimeDesc": "Charts and word clouds appear instantly on the projector.",
+    "joinSession": "Join a session",
+    "scanToJoin": "Or scan to join",
+    "trainerQuestion": "Are you a trainer?",
+    "trainerDescription": "Create your sessions, manage your questions and control your presentations from a dedicated dashboard.",
+    "signInWithGoogle": "Sign in with Google"
+  },
+  "join": {
+    "title": "VoxRoom",
+    "subtitle": "Enter your session code",
+    "codeLengthError": "The code is 4 characters.",
+    "sessionNotFound": "Session not found. Check the code.",
+    "networkError": "Unable to join the session.",
+    "submitButton": "Join",
+    "loadingButton": "Checking..."
+  },
+  "session": {
+    "waitingForQuestion": "Waiting for a question...",
+    "refresh": "Refresh",
+    "responseSent": "Response sent!",
+    "waitingForResults": "Waiting for results...",
+    "alreadyAnswered": "You already answered.",
+    "submitButton": "Send",
+    "submittingButton": "Sending...",
+    "wordPlaceholder": "Your word...",
+    "sessionClosed": "This session is over.",
+    "thankYou": "Thanks for participating!",
+    "joinAnother": "Join another session",
+    "joinSession": "Join a session",
+    "errors": {
+      "questionNotOpen": "This question is no longer open.",
+      "questionNotFound": "Question not found.",
+      "alreadyAnswered": "You already answered this question.",
+      "sessionNotFound": "Session not found.",
+      "submitError": "Unable to send the response.",
+      "generic": "An error occurred."
+    }
+  },
+  "present": {
+    "joinSession": "Join the session",
+    "waitingForPresenter": "Waiting for the presenter...",
+    "responseCount": "{count, plural, one {# response} other {# responses}}"
+  },
+  "dashboard": {
+    "title": "My sessions",
+    "newSession": "+ New session",
+    "emptyTitle": "No sessions yet.",
+    "emptyDescription": "Create your first session to get started.",
+    "createdOn": "Created on {date}",
+    "questionCount": "{count, plural, one {# question} other {# questions}}",
+    "statusWaiting": "Waiting",
+    "statusActive": "Active",
+    "statusClosed": "Closed",
+    "editButton": "Edit",
+    "controlButton": "Control"
+  },
+  "sessions": {
+    "new": {
+      "title": "New session",
+      "subtitle": "A short code will be generated automatically.",
+      "nameLabel": "Session name",
+      "namePlaceholder": "e.g. React Training — April",
+      "cancelButton": "Cancel",
+      "createButton": "Create",
+      "creatingButton": "Creating...",
+      "genericError": "An error occurred.",
+      "networkError": "Unable to create the session."
+    },
+    "edit": {
+      "loading": "Loading...",
+      "sessionNotFound": "Session not found.",
+      "loadingError": "Loading error.",
+      "controlButton": "Control →",
+      "dashboardButton": "Dashboard",
+      "noQuestions": "No questions yet.",
+      "confirm": "Confirm",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "addTitle": "Add a question",
+      "typeMcq": "MCQ",
+      "typeWordcloud": "Word cloud",
+      "questionLabel": "Question",
+      "questionPlaceholder": "e.g. What is your favorite technology?",
+      "choicesLabel": "Choices (min. 2)",
+      "choicePlaceholder": "Choice {number}",
+      "minChoicesError": "Add at least 2 choices.",
+      "createError": "Error during creation.",
+      "networkError": "Unable to create the question.",
+      "addButton": "+ Add",
+      "addingButton": "Adding...",
+      "mcqLabel": "MCQ — {choices}",
+      "wordcloudLabel": "Word cloud"
+    },
+    "control": {
+      "statusPending": "Pending",
+      "statusOpen": "Open",
+      "statusRevealed": "Results revealed",
+      "statusClosed": "Closed",
+      "sessionNotFound": "Session not found.",
+      "loadingError": "Loading error.",
+      "backToDashboard": "Back to dashboard",
+      "editButton": "← Edit",
+      "sessionStatusActive": "Active",
+      "sessionStatusWaiting": "Waiting",
+      "sessionStatusClosed": "Closed",
+      "noQuestions": "No questions. Add some from the edit page.",
+      "responseCount": "{count, plural, one {# response} other {# responses}}",
+      "launchButton": "Launch",
+      "revealButton": "Reveal",
+      "closeButton": "Close",
+      "mcqLabel": "MCQ — {choices}",
+      "wordcloudLabel": "Word cloud"
+    }
+  },
+  "auth": {
+    "subtitle": "Live polling for trainers",
+    "signInWithGoogle": "Sign in with Google"
+  }
+}

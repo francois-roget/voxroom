@@ -3,7 +3,8 @@ import { connectDB } from '@/lib/db';
 import User from '@/models/User';
 import Session from '@/models/Session';
 import Question from '@/models/Question';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import type { ISession } from '@/types';
 import type { Types } from 'mongoose';
 
@@ -11,13 +12,18 @@ interface SessionWithStats extends ISession {
   questionCount: number;
 }
 
-const STATUS_LABEL: Record<string, string> = {
-  waiting: 'En attente',
-  active: 'En cours',
-  closed: 'Terminée',
-};
+export default async function DashboardPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  setRequestLocale(locale);
 
-export default async function DashboardPage() {
+  const t = await getTranslations('dashboard');
+
+  const STATUS_LABEL: Record<string, string> = {
+    waiting: t('statusWaiting'),
+    active: t('statusActive'),
+    closed: t('statusClosed'),
+  };
+
   const session = await auth();
 
   let sessions: SessionWithStats[] = [];
@@ -51,7 +57,7 @@ export default async function DashboardPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold" style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)' }}>
-              Mes sessions
+              {t('title')}
             </h1>
             <p className="text-sm mt-1" style={{ color: 'var(--color-text-secondary)' }}>
               {session?.user?.name}
@@ -62,7 +68,7 @@ export default async function DashboardPage() {
             className="rounded-lg px-4 py-2 text-sm font-medium transition-colors"
             style={{ backgroundColor: 'var(--color-accent)', color: '#0D1117' }}
           >
-            + Nouvelle session
+            {t('newSession')}
           </Link>
         </div>
 
@@ -72,9 +78,9 @@ export default async function DashboardPage() {
             className="rounded-xl p-12 text-center"
             style={{ backgroundColor: 'var(--color-bg-surface)', border: '1px solid var(--color-border)' }}
           >
-            <p style={{ color: 'var(--color-text-secondary)' }}>Aucune session pour l&apos;instant.</p>
+            <p style={{ color: 'var(--color-text-secondary)' }}>{t('emptyTitle')}</p>
             <p className="text-sm mt-2" style={{ color: 'var(--color-text-muted)' }}>
-              Créez votre première session pour commencer.
+              {t('emptyDescription')}
             </p>
           </div>
         ) : (
@@ -91,11 +97,11 @@ export default async function DashboardPage() {
                   </span>
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-                      Créée le {new Date(s.createdAt).toLocaleDateString('fr-FR')}
+                      {t('createdOn', { date: new Date(s.createdAt).toLocaleDateString(locale === 'fr' ? 'fr-FR' : 'en-GB') })}
                     </span>
                     <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>·</span>
                     <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-                      {s.questionCount === 1 ? '1 question' : `${s.questionCount} questions`}
+                      {t('questionCount', { count: s.questionCount })}
                     </span>
                   </div>
                 </div>
@@ -137,14 +143,14 @@ export default async function DashboardPage() {
                     className="rounded-lg px-3 py-1.5 text-xs font-medium"
                     style={{ backgroundColor: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', color: 'var(--color-text-secondary)' }}
                   >
-                    Éditer
+                    {t('editButton')}
                   </Link>
                   <Link
                     href={`/sessions/${s.code}/control`}
                     className="rounded-lg px-3 py-1.5 text-xs font-medium"
                     style={{ backgroundColor: 'var(--color-accent)', color: '#0D1117' }}
                   >
-                    Contrôle
+                    {t('controlButton')}
                   </Link>
                 </div>
               </div>

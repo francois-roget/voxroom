@@ -1,15 +1,23 @@
+import { Link } from '@/i18n/navigation';
 import { redirect } from 'next/navigation';
-import Link from 'next/link';
 import Image from 'next/image';
 import { auth } from '@/auth';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { routing } from '@/i18n/routing';
 import JoinForm from '@/components/participant/JoinForm';
 import LandingQR from '@/components/landing/LandingQR';
 
-export default async function Home() {
+export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+
   const session = await auth();
   if (session) {
-    redirect('/dashboard');
+    const dashboardPath = locale === routing.defaultLocale ? '/dashboard' : `/${locale}/dashboard`;
+    redirect(dashboardPath);
   }
+
+  const t = await getTranslations('landing');
 
   return (
     <main
@@ -37,8 +45,7 @@ export default async function Home() {
             className="text-xl max-w-xl mx-auto leading-relaxed"
             style={{ color: 'var(--color-text-secondary)' }}
           >
-            Le live polling simple et instantané pour vos formations.
-            Posez des questions, récoltez des réponses en temps réel.
+            {t('heroDescription')}
           </p>
         </div>
 
@@ -47,18 +54,18 @@ export default async function Home() {
           {[
             {
               icon: '⚡',
-              title: 'Questions en direct',
-              desc: 'QCM et nuages de mots, lancés en un clic depuis votre panneau de contrôle.',
+              title: t('featureLiveTitle'),
+              desc: t('featureLiveDesc'),
             },
             {
               icon: '📱',
-              title: 'Sans inscription',
-              desc: 'Vos participants rejoignent avec un simple code à 4 caractères. Aucun compte requis.',
+              title: t('featureNoSignupTitle'),
+              desc: t('featureNoSignupDesc'),
             },
             {
               icon: '📊',
-              title: 'Résultats en temps réel',
-              desc: 'Graphiques et nuages de mots s\'affichent instantanément sur le vidéoprojecteur.',
+              title: t('featureRealtimeTitle'),
+              desc: t('featureRealtimeDesc'),
             },
           ].map(({ icon, title, desc }) => (
             <div
@@ -99,7 +106,7 @@ export default async function Home() {
               className="text-lg font-semibold"
               style={{ color: 'var(--color-text-primary)' }}
             >
-              Rejoindre une session
+              {t('joinSession')}
             </p>
             <JoinForm compact />
           </div>
@@ -121,20 +128,20 @@ export default async function Home() {
             className="text-lg font-medium"
             style={{ color: 'var(--color-text-primary)' }}
           >
-            Vous êtes formateur ?
+            {t('trainerQuestion')}
           </p>
           <p
             className="text-sm max-w-sm"
             style={{ color: 'var(--color-text-secondary)' }}
           >
-            Créez vos sessions, gérez vos questions et pilotez vos présentations depuis un tableau de bord dédié.
+            {t('trainerDescription')}
           </p>
           <Link
             href="/login"
             className="inline-block rounded-lg px-8 py-3 text-base font-bold"
             style={{ backgroundColor: 'var(--color-accent)', color: '#0D1117' }}
           >
-            Se connecter avec Google
+            {t('signInWithGoogle')}
           </Link>
         </div>
 

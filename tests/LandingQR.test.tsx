@@ -1,6 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { vi, describe, it, expect } from 'vitest';
 import LandingQR from '@/components/landing/LandingQR';
+import { IntlWrapper } from './helpers/intl-wrapper';
 
 vi.mock('qrcode.react', () => ({
   QRCodeSVG: ({ value }: { value: string }) => (
@@ -10,14 +11,14 @@ vi.mock('qrcode.react', () => ({
 
 describe('LandingQR', () => {
   it('renders a QR code element after mount', async () => {
-    render(<LandingQR />);
+    render(<LandingQR />, { wrapper: IntlWrapper });
     await waitFor(() =>
       expect(screen.getByTestId('qr-code')).toBeInTheDocument()
     );
   });
 
   it('QR value is window.location.origin + /join', async () => {
-    render(<LandingQR />);
+    render(<LandingQR />, { wrapper: IntlWrapper });
     await waitFor(() => {
       const qr = screen.getByTestId('qr-code');
       expect(qr.getAttribute('data-value')).toBe(`${window.location.origin}/join`);

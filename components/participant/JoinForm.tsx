@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 
 type JoinFormProps = {
   compact?: boolean;
@@ -9,6 +10,7 @@ type JoinFormProps = {
 
 export default function JoinForm({ compact = false }: JoinFormProps) {
   const router = useRouter();
+  const t = useTranslations('join');
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -17,7 +19,7 @@ export default function JoinForm({ compact = false }: JoinFormProps) {
     e.preventDefault();
     const normalized = code.trim().toUpperCase();
     if (normalized.length !== 4) {
-      setError('Le code fait 4 caractères.');
+      setError(t('codeLengthError'));
       return;
     }
 
@@ -26,12 +28,12 @@ export default function JoinForm({ compact = false }: JoinFormProps) {
     try {
       const res = await fetch(`/api/sessions/${normalized}`);
       if (!res.ok) {
-        setError('Session introuvable. Vérifie le code.');
+        setError(t('sessionNotFound'));
         return;
       }
       router.push(`/session/${normalized}`);
     } catch {
-      setError('Impossible de rejoindre la session.');
+      setError(t('networkError'));
     } finally {
       setLoading(false);
     }
@@ -74,7 +76,7 @@ export default function JoinForm({ compact = false }: JoinFormProps) {
         className="rounded-lg px-4 py-3 text-sm font-medium disabled:opacity-50 min-h-[48px]"
         style={{ backgroundColor: 'var(--color-accent)', color: '#0D1117' }}
       >
-        {loading ? 'Vérification…' : 'Rejoindre'}
+        {loading ? t('loadingButton') : t('submitButton')}
       </button>
     </form>
   );
@@ -90,10 +92,10 @@ export default function JoinForm({ compact = false }: JoinFormProps) {
     >
       <div className="text-center">
         <h1 className="text-2xl font-bold" style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)' }}>
-          VoxRoom
+          {t('title')}
         </h1>
         <p className="text-sm mt-2" style={{ color: 'var(--color-text-secondary)' }}>
-          Entre le code de ta session
+          {t('subtitle')}
         </p>
       </div>
       {form}
