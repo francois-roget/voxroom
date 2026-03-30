@@ -25,6 +25,7 @@ export default function EditSessionPage() {
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [reordering, setReordering] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -95,6 +96,42 @@ export default function EditSessionPage() {
       // silent
     } finally {
       setConfirmDeleteId(null);
+    }
+  }
+
+  async function handleMove(index: number, direction: "up" | "down") {
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= questions.length) return;
+    if (!session) return;
+
+    const reordered = [...questions];
+    [reordered[index], reordered[targetIndex]] = [
+      reordered[targetIndex],
+      reordered[index],
+    ];
+
+    const previousQuestions = questions;
+    setQuestions(reordered);
+    setReordering(true);
+
+    try {
+      const res = await fetch("/api/questions/reorder", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sessionId: String(session._id),
+          orderedIds: reordered.map((q) => String(q._id)),
+        }),
+      });
+      if (!res.ok) {
+        setQuestions(previousQuestions);
+        setFormError(t("reorderError"));
+      }
+    } catch {
+      setQuestions(previousQuestions);
+      setFormError(t("reorderError"));
+    } finally {
+      setReordering(false);
     }
   }
 
@@ -200,6 +237,34 @@ export default function EditSessionPage() {
               }}
             >
               <div className="flex gap-3 items-start">
+                <div className="flex flex-col gap-0.5 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => handleMove(i, "up")}
+                    disabled={i === 0 || reordering}
+                    title={t("moveUp")}
+                    aria-label={t("moveUp")}
+                    className="p-1 rounded hover:bg-[var(--color-bg-elevated)] disabled:opacity-20 transition-opacity"
+                    style={{ color: "var(--color-text-muted)" }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                      <path d="M4 10L8 6L12 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleMove(i, "down")}
+                    disabled={i === questions.length - 1 || reordering}
+                    title={t("moveDown")}
+                    aria-label={t("moveDown")}
+                    className="p-1 rounded hover:bg-[var(--color-bg-elevated)] disabled:opacity-20 transition-opacity"
+                    style={{ color: "var(--color-text-muted)" }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                      <path d="M4 6L8 10L12 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </button>
+                </div>
                 <span
                   className="text-xs font-bold mt-0.5 w-5 text-right shrink-0"
                   style={{ color: "var(--color-text-muted)" }}
