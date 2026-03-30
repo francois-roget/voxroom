@@ -103,7 +103,10 @@
       "addButton": "+ Add",
       "addingButton": "Adding...",
       "mcqLabel": "MCQ — {choices}",
-      "wordcloudLabel": "Word cloud"
+      "wordcloudLabel": "Word cloud",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "reorderError": "Unable to reorder questions."
     },
     "control": {
       "statusPending": "Pending",

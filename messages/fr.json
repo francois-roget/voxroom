@@ -103,7 +103,10 @@
       "addButton": "+ Ajouter",
       "addingButton": "Ajout…",
       "mcqLabel": "QCM — {choices}",
-      "wordcloudLabel": "Nuage de mots"
+      "wordcloudLabel": "Nuage de mots",
+      "moveUp": "Monter",
+      "moveDown": "Descendre",
+      "reorderError": "Impossible de réorganiser les questions."
     },
     "control": {
       "statusPending": "En attente",
