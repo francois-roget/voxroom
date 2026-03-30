@@ -72,3 +72,14 @@ html, body {
 body {
   -webkit-font-smoothing: antialiased;
 }
+
+a, button:not(:disabled) {
+  cursor: pointer;
+}
+
+.lang-option {
+  background-color: transparent;
+}
+.lang-option:hover {
+  background-color: var(--color-bg-surface);
+}

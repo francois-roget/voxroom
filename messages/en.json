@@ -114,6 +114,7 @@
       "loadingError": "Loading error.",
       "backToDashboard": "Back to dashboard",
       "editButton": "← Edit",
+      "presentButton": "Present →",
       "sessionStatusActive": "Active",
       "sessionStatusWaiting": "Waiting",
       "sessionStatusClosed": "Closed",
@@ -125,6 +126,12 @@
       "mcqLabel": "MCQ — {choices}",
       "wordcloudLabel": "Word cloud"
     }
+  },
+  "nav": {
+    "join": "Join",
+    "dashboard": "Dashboard",
+    "login": "Login",
+    "logout": "Logout"
   },
   "auth": {
     "subtitle": "Live polling for trainers",
