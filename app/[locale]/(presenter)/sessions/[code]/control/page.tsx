@@ -98,13 +98,23 @@ export default function ControlPage() {
               </span>
             </div>
           </div>
-          <Link
-            href={`/sessions/${code}/edit`}
-            className="rounded-lg px-4 py-2 text-sm font-medium"
-            style={{ backgroundColor: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', color: 'var(--color-text-secondary)' }}
-          >
-            {t('editButton')}
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              href={`/sessions/${code}/edit`}
+              className="rounded-lg px-4 py-2 text-sm font-medium"
+              style={{ backgroundColor: 'var(--color-bg-elevated)', border: '1px solid var(--color-border)', color: 'var(--color-text-secondary)' }}
+            >
+              {t('editButton')}
+            </Link>
+            <Link
+              href={`/present/${code}`}
+              target="_blank"
+              className="rounded-lg px-4 py-2 text-sm font-medium"
+              style={{ backgroundColor: 'var(--color-accent)', color: '#0D1117' }}
+            >
+              {t('presentButton')}
+            </Link>
+          </div>
         </div>
 
         {/* Questions */}

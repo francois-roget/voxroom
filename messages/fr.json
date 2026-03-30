@@ -114,6 +114,7 @@
       "loadingError": "Erreur de chargement.",
       "backToDashboard": "Retour au tableau de bord",
       "editButton": "← Éditer",
+      "presentButton": "Présenter →",
       "sessionStatusActive": "En cours",
       "sessionStatusWaiting": "En attente",
       "sessionStatusClosed": "Fermée",
@@ -125,6 +126,12 @@
       "mcqLabel": "QCM — {choices}",
       "wordcloudLabel": "Nuage de mots"
     }
+  },
+  "nav": {
+    "join": "Rejoindre",
+    "dashboard": "Tableau de bord",
+    "login": "Connexion",
+    "logout": "Déconnexion"
   },
   "auth": {
     "subtitle": "Live polling pour formateurs",

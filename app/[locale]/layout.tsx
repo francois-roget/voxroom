@@ -3,7 +3,9 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
-import LanguageSwitcher from '@/components/shared/LanguageSwitcher';
+import { auth } from '@/auth';
+import Header from '@/components/shared/Header';
+import { signOutAction } from '@/app/actions/auth';
 import '../globals.css';
 
 export const metadata: Metadata = {
@@ -30,6 +32,13 @@ export default async function LocaleLayout({ children, params }: Props) {
   setRequestLocale(locale);
   const messages = await getMessages();
 
+  let session = null;
+  try {
+    session = await auth();
+  } catch {
+    // Auth may fail if env vars are missing — render as unauthenticated
+  }
+
   return (
     <html lang={locale}>
       <head>
@@ -41,8 +50,11 @@ export default async function LocaleLayout({ children, params }: Props) {
         />
       </head>
       <body>
-        <NextIntlClientProvider messages={messages}>
-          <LanguageSwitcher />
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <Header
+            user={session?.user ?? null}
+            signOutAction={signOutAction}
+          />
           {children}
         </NextIntlClientProvider>
       </body>

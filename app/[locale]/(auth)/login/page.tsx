@@ -1,5 +1,5 @@
-import { signIn } from '@/auth';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { signInAction } from '@/app/actions/auth';
 
 export default async function LoginPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -8,33 +8,18 @@ export default async function LoginPage({ params }: { params: Promise<{ locale: 
   const t = await getTranslations('auth');
 
   return (
-    <main className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--color-bg-base)' }}>
-      <div
-        className="w-full max-w-sm rounded-xl p-8 flex flex-col items-center gap-8"
-        style={{ backgroundColor: 'var(--color-bg-surface)', border: '1px solid var(--color-border)' }}
-      >
+    <main className="min-h-screen flex items-center justify-center bg-bg-base">
+      <div className="w-full max-w-sm rounded-xl p-8 flex flex-col items-center gap-8 bg-bg-surface border border-border">
         <div className="text-center flex flex-col gap-2">
-          <h1 className="text-3xl font-bold" style={{ fontFamily: 'var(--font-display)', color: 'var(--color-accent)' }}>
-            VoxRoom
-          </h1>
-          <p style={{ color: 'var(--color-text-secondary)' }}>{t('subtitle')}</p>
+          <h1 className="text-3xl font-bold font-display text-accent">VoxRoom</h1>
+          <p className="text-text-secondary">{t('subtitle')}</p>
         </div>
 
-        <form
-          action={async () => {
-            'use server';
-            await signIn('google', { redirectTo: locale === 'en' ? '/dashboard' : `/${locale}/dashboard` });
-          }}
-          className="w-full"
-        >
+        <form action={signInAction} className="w-full">
+          <input type="hidden" name="locale" value={locale} />
           <button
             type="submit"
-            className="w-full flex items-center justify-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors cursor-pointer"
-            style={{
-              backgroundColor: 'var(--color-bg-elevated)',
-              border: '1px solid var(--color-border)',
-              color: 'var(--color-text-primary)',
-            }}
+            className="w-full flex items-center justify-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors bg-bg-elevated border border-border text-text-primary"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
               <path

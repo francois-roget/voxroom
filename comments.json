@@ -1,0 +1,20 @@
+[
+  {
+    "file_path": "app/[locale]/(auth)/login/page.tsx",
+    "start_line": 24,
+    "end_line": 27,
+    "comment": "The redirect URL is hardcoded here. It would be better to centralize this logic to ensure consistency with other parts of the app (like `signOutAction` in `app/actions/auth.ts`)."
+  },
+  {
+    "file_path": "components/shared/Header.tsx",
+    "start_line": 26,
+    "end_line": 29,
+    "comment": "While using CSS variables in inline styles works, since Tailwind v4 is used and theme variables are defined in `globals.css`, consider using Tailwind utility classes (e.g., `bg-surface` or `border-border`) instead for consistency with other parts of the project."
+  },
+  {
+    "file_path": "components/shared/Header.tsx",
+    "start_line": 9,
+    "end_line": 9,
+    "comment": "Consider moving `HIDDEN_PREFIXES` to a shared configuration file or using a more robust route matching if the list grows or if more complex conditions are needed."
+  }
+]
