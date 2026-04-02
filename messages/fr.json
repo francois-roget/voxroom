@@ -17,7 +17,8 @@
     "scanToJoin": "Ou scanne pour rejoindre",
     "trainerQuestion": "Vous êtes formateur ?",
     "trainerDescription": "Créez vos sessions, gérez vos questions et pilotez vos présentations depuis un tableau de bord dédié.",
-    "signInWithGoogle": "Se connecter avec Google"
+    "signInWithGoogle": "Se connecter avec Google",
+    "goToDashboard": "Accéder au tableau de bord"
   },
   "join": {
     "title": "VoxRoom",

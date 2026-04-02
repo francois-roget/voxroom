@@ -1,9 +1,7 @@
 import { Link } from '@/i18n/navigation';
-import { redirect } from 'next/navigation';
 import Image from 'next/image';
 import { auth } from '@/auth';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import { routing } from '@/i18n/routing';
 import JoinForm from '@/components/participant/JoinForm';
 import LandingQR from '@/components/landing/LandingQR';
 
@@ -11,10 +9,11 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const session = await auth();
-  if (session) {
-    const dashboardPath = locale === routing.defaultLocale ? '/dashboard' : `/${locale}/dashboard`;
-    redirect(dashboardPath);
+  let session = null;
+  try {
+    session = await auth();
+  } catch {
+    // Auth may fail if env vars are missing — render as unauthenticated
   }
 
   const t = await getTranslations('landing');
@@ -136,13 +135,23 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           >
             {t('trainerDescription')}
           </p>
-          <Link
-            href="/login"
-            className="inline-block rounded-lg px-8 py-3 text-base font-bold"
-            style={{ backgroundColor: 'var(--color-accent)', color: '#0D1117' }}
-          >
-            {t('signInWithGoogle')}
-          </Link>
+          {session ? (
+            <Link
+              href="/dashboard"
+              className="inline-block rounded-lg px-8 py-3 text-base font-bold"
+              style={{ backgroundColor: 'var(--color-accent)', color: '#0D1117' }}
+            >
+              {t('goToDashboard')}
+            </Link>
+          ) : (
+            <Link
+              href="/login"
+              className="inline-block rounded-lg px-8 py-3 text-base font-bold"
+              style={{ backgroundColor: 'var(--color-accent)', color: '#0D1117' }}
+            >
+              {t('signInWithGoogle')}
+            </Link>
+          )}
         </div>
 
       </div>

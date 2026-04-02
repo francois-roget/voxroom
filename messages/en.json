@@ -17,7 +17,8 @@
     "scanToJoin": "Or scan to join",
     "trainerQuestion": "Are you a trainer?",
     "trainerDescription": "Create your sessions, manage your questions and control your presentations from a dedicated dashboard.",
-    "signInWithGoogle": "Sign in with Google"
+    "signInWithGoogle": "Sign in with Google",
+    "goToDashboard": "Go to dashboard"
   },
   "join": {
     "title": "VoxRoom",
