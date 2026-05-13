@@ -7,12 +7,24 @@ const intlMiddleware = createIntlMiddleware(routing);
 
 const PROTECTED_PREFIXES = ['/dashboard', '/sessions/'];
 
+// NextAuth v5 renomme le cookie : __Secure- en prod (HTTPS), authjs. en dev
+const COOKIE_NAME =
+  process.env.NODE_ENV === 'production'
+    ? '__Secure-authjs.session-token'
+    : 'authjs.session-token';
+
 function isProtectedPath(pathname: string): boolean {
   const localePattern = routing.locales.join('|');
   const stripped = pathname.replace(new RegExp(`^/(${localePattern})`), '') || '/';
   return PROTECTED_PREFIXES.some(
     (prefix) => stripped === prefix.replace(/\/$/, '') || stripped.startsWith(prefix)
   );
+}
+
+function isLoginPath(pathname: string): boolean {
+  const localePattern = routing.locales.join('|');
+  const stripped = pathname.replace(new RegExp(`^/(${localePattern})`), '') || '/';
+  return stripped === '/login';
 }
 
 function getLocaleFromPath(pathname: string): string {
@@ -24,16 +36,22 @@ function getLocaleFromPath(pathname: string): string {
 export default async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
-  if (isProtectedPath(pathname)) {
-    const token = await getToken({
-      req: request,
-      secret: process.env.NEXTAUTH_SECRET,
-    });
-    if (!token) {
-      const locale = getLocaleFromPath(pathname);
-      const loginPath = locale !== routing.defaultLocale ? `/${locale}/login` : '/login';
-      return NextResponse.redirect(new URL(loginPath, request.url));
-    }
+  const token = await getToken({
+    req: request,
+    secret: process.env.NEXTAUTH_SECRET,
+    cookieName: COOKIE_NAME,
+  });
+
+  if (isProtectedPath(pathname) && !token) {
+    const locale = getLocaleFromPath(pathname);
+    const loginPath = locale !== routing.defaultLocale ? `/${locale}/login` : '/login';
+    return NextResponse.redirect(new URL(loginPath, request.url));
+  }
+
+  if (isLoginPath(pathname) && token) {
+    const locale = getLocaleFromPath(pathname);
+    const dashboardPath = locale !== routing.defaultLocale ? `/${locale}/dashboard` : '/dashboard';
+    return NextResponse.redirect(new URL(dashboardPath, request.url));
   }
 
   return intlMiddleware(request);
