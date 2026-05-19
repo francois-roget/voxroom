@@ -5,6 +5,7 @@ const SessionSchema = new Schema<ISession>({
   code: { type: String, required: true, unique: true, index: true },
   name: { type: String, required: true },
   ownerId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  kind: { type: String, enum: ['poll', 'poker'], default: 'poll' },
   status: { type: String, enum: ['waiting', 'active', 'closed'], default: 'waiting' },
   currentQuestionId: { type: Schema.Types.ObjectId, ref: 'Question', default: null },
   createdAt: { type: Date, default: Date.now },

@@ -8,6 +8,7 @@ export default function NewSessionPage() {
   const router = useRouter();
   const t = useTranslations('sessions.new');
   const [name, setName] = useState('');
+  const [kind, setKind] = useState<'poll' | 'poker'>('poll');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -22,7 +23,7 @@ export default function NewSessionPage() {
       const res = await fetch('/api/sessions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name }),
+        body: JSON.stringify({ name, kind }),
       });
 
       if (!res.ok) {
@@ -74,6 +75,29 @@ export default function NewSessionPage() {
                 color: 'var(--color-text-primary)',
               }}
             />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium" style={{ color: 'var(--color-text-secondary)' }}>
+              {t('kindLabel')}
+            </label>
+            <div className="flex gap-2">
+              {(['poll', 'poker'] as const).map((k) => (
+                <button
+                  key={k}
+                  type="button"
+                  onClick={() => setKind(k)}
+                  className="flex-1 rounded-lg px-4 py-3 text-sm font-medium transition-colors"
+                  style={{
+                    backgroundColor: kind === k ? 'var(--color-accent)' : 'var(--color-bg-elevated)',
+                    border: `1px solid ${kind === k ? 'var(--color-accent)' : 'var(--color-border)'}`,
+                    color: kind === k ? '#0D1117' : 'var(--color-text-secondary)',
+                  }}
+                >
+                  {k === 'poll' ? t('kindPoll') : t('kindPoker')}
+                </button>
+              ))}
+            </div>
           </div>
 
           {error && (

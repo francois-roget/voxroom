@@ -18,14 +18,21 @@ export default function EditSessionPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // New question form state
+  // Poll form state
   const [addingType, setAddingType] = useState<QuestionType>("mcq");
   const [newText, setNewText] = useState("");
   const [newChoices, setNewChoices] = useState(["", "", "", ""]);
+
+  // Poker form state
+  const [newStoryTitle, setNewStoryTitle] = useState("");
+  const [newJiraUrl, setNewJiraUrl] = useState("");
+
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [reordering, setReordering] = useState(false);
+
+  const isPoker = session?.kind === "poker";
 
   useEffect(() => {
     async function load() {
@@ -52,23 +59,36 @@ export default function EditSessionPage() {
     if (!session) return;
     setFormError("");
 
-    const choices = newChoices.map((c) => c.trim()).filter(Boolean);
-    if (addingType === "mcq" && choices.length < 2) {
-      setFormError(t("minChoicesError"));
-      return;
-    }
-
     setSubmitting(true);
     try {
-      const res = await fetch("/api/questions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      let body: Record<string, unknown>;
+
+      if (isPoker) {
+        body = {
+          sessionId: String(session._id),
+          type: "poker",
+          text: newStoryTitle.trim(),
+          storyMeta: { jiraUrl: newJiraUrl.trim() || null },
+        };
+      } else {
+        const choices = newChoices.map((c) => c.trim()).filter(Boolean);
+        if (addingType === "mcq" && choices.length < 2) {
+          setFormError(t("minChoicesError"));
+          setSubmitting(false);
+          return;
+        }
+        body = {
           sessionId: String(session._id),
           type: addingType,
           text: newText.trim(),
           choices: addingType === "mcq" ? choices : [],
-        }),
+        };
+      }
+
+      const res = await fetch("/api/questions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
       });
 
       if (!res.ok) {
@@ -81,6 +101,8 @@ export default function EditSessionPage() {
       setQuestions((prev) => [...prev, created]);
       setNewText("");
       setNewChoices(["", "", "", ""]);
+      setNewStoryTitle("");
+      setNewJiraUrl("");
     } catch {
       setFormError(t("networkError"));
     } finally {
@@ -284,8 +306,21 @@ export default function EditSessionPage() {
                   >
                     {q.type === "mcq"
                       ? t("mcqLabel", { choices: q.choices.join(", ") })
-                      : t("wordcloudLabel")}
+                      : q.type === "poker"
+                        ? t("pokerStoryLabel")
+                        : t("wordcloudLabel")}
                   </span>
+                  {q.type === "poker" && q.storyMeta?.jiraUrl && (
+                    <a
+                      href={q.storyMeta.jiraUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs underline"
+                      style={{ color: "#0EA5E9" }}
+                    >
+                      {t("jiraUrlLabel")} ↗
+                    </a>
+                  )}
                 </div>
               </div>
               {confirmDeleteId === String(q._id) ? (
@@ -333,86 +368,134 @@ export default function EditSessionPage() {
             className="text-base font-bold"
             style={{ color: "var(--color-text-primary)" }}
           >
-            {t("addTitle")}
+            {isPoker ? t("addStoryTitle") : t("addTitle")}
           </h2>
 
-          {/* Type selector */}
-          <div className="flex gap-2">
-            {(["mcq", "wordcloud"] as QuestionType[]).map((type) => (
-              <button
-                key={type}
-                type="button"
-                onClick={() => setAddingType(type)}
-                className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                style={
-                  addingType === type
-                    ? {
-                        backgroundColor: "var(--color-accent)",
-                        color: "#0D1117",
-                      }
-                    : {
-                        backgroundColor: "var(--color-bg-elevated)",
-                        border: "1px solid var(--color-border)",
-                        color: "var(--color-text-secondary)",
-                      }
-                }
-              >
-                {type === "mcq" ? t("typeMcq") : t("typeWordcloud")}
-              </button>
-            ))}
-          </div>
+          {/* Type selector — poll only */}
+          {!isPoker && (
+            <div className="flex gap-2">
+              {(["mcq", "wordcloud"] as QuestionType[]).map((type) => (
+                <button
+                  key={type}
+                  type="button"
+                  onClick={() => setAddingType(type)}
+                  className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                  style={
+                    addingType === type
+                      ? { backgroundColor: "var(--color-accent)", color: "#0D1117" }
+                      : {
+                          backgroundColor: "var(--color-bg-elevated)",
+                          border: "1px solid var(--color-border)",
+                          color: "var(--color-text-secondary)",
+                        }
+                  }
+                >
+                  {type === "mcq" ? t("typeMcq") : t("typeWordcloud")}
+                </button>
+              ))}
+            </div>
+          )}
 
           <form onSubmit={handleAddQuestion} className="flex flex-col gap-4">
-            <div className="flex flex-col gap-2">
-              <label
-                className="text-sm font-medium"
-                style={{ color: "var(--color-text-secondary)" }}
-              >
-                {t("questionLabel")}
-              </label>
-              <input
-                type="text"
-                value={newText}
-                onChange={(e) => setNewText(e.target.value)}
-                placeholder={t("questionPlaceholder")}
-                required
-                className="rounded-lg px-4 py-3 text-sm outline-none"
-                style={{
-                  backgroundColor: "var(--color-bg-elevated)",
-                  border: "1px solid var(--color-border)",
-                  color: "var(--color-text-primary)",
-                }}
-              />
-            </div>
-
-            {addingType === "mcq" && (
-              <div className="flex flex-col gap-2">
-                <label
-                  className="text-sm font-medium"
-                  style={{ color: "var(--color-text-secondary)" }}
-                >
-                  {t("choicesLabel")}
-                </label>
-                {newChoices.map((c, i) => (
+            {isPoker ? (
+              <>
+                {/* Poker story form */}
+                <div className="flex flex-col gap-2">
+                  <label
+                    className="text-sm font-medium"
+                    style={{ color: "var(--color-text-secondary)" }}
+                  >
+                    {t("storyTitleLabel")}
+                  </label>
                   <input
-                    key={i}
                     type="text"
-                    value={c}
-                    onChange={(e) => {
-                      const updated = [...newChoices];
-                      updated[i] = e.target.value;
-                      setNewChoices(updated);
-                    }}
-                    placeholder={t("choicePlaceholder", { number: i + 1 })}
-                    className="rounded-lg px-4 py-2 text-sm outline-none"
+                    value={newStoryTitle}
+                    onChange={(e) => setNewStoryTitle(e.target.value)}
+                    placeholder={t("storyTitlePlaceholder")}
+                    required
+                    className="rounded-lg px-4 py-3 text-sm outline-none"
                     style={{
                       backgroundColor: "var(--color-bg-elevated)",
                       border: "1px solid var(--color-border)",
                       color: "var(--color-text-primary)",
                     }}
                   />
-                ))}
-              </div>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label
+                    className="text-sm font-medium"
+                    style={{ color: "var(--color-text-secondary)" }}
+                  >
+                    {t("jiraUrlLabel")}
+                  </label>
+                  <input
+                    type="url"
+                    value={newJiraUrl}
+                    onChange={(e) => setNewJiraUrl(e.target.value)}
+                    placeholder={t("jiraUrlPlaceholder")}
+                    className="rounded-lg px-4 py-3 text-sm outline-none"
+                    style={{
+                      backgroundColor: "var(--color-bg-elevated)",
+                      border: "1px solid var(--color-border)",
+                      color: "var(--color-text-primary)",
+                    }}
+                  />
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Poll question form */}
+                <div className="flex flex-col gap-2">
+                  <label
+                    className="text-sm font-medium"
+                    style={{ color: "var(--color-text-secondary)" }}
+                  >
+                    {t("questionLabel")}
+                  </label>
+                  <input
+                    type="text"
+                    value={newText}
+                    onChange={(e) => setNewText(e.target.value)}
+                    placeholder={t("questionPlaceholder")}
+                    required
+                    className="rounded-lg px-4 py-3 text-sm outline-none"
+                    style={{
+                      backgroundColor: "var(--color-bg-elevated)",
+                      border: "1px solid var(--color-border)",
+                      color: "var(--color-text-primary)",
+                    }}
+                  />
+                </div>
+                {addingType === "mcq" && (
+                  <div className="flex flex-col gap-2">
+                    <label
+                      className="text-sm font-medium"
+                      style={{ color: "var(--color-text-secondary)" }}
+                    >
+                      {t("choicesLabel")}
+                    </label>
+                    {newChoices.map((c, i) => (
+                      <input
+                        key={i}
+                        type="text"
+                        value={c}
+                        onChange={(e) => {
+                          const updated = [...newChoices];
+                          updated[i] = e.target.value;
+                          setNewChoices(updated);
+                        }}
+                        placeholder={t("choicePlaceholder", { number: i + 1 })}
+                        className="rounded-lg px-4 py-2 text-sm outline-none"
+                        style={{
+                          backgroundColor: "var(--color-bg-elevated)",
+                          border: "1px solid var(--color-border)",
+                          color: "var(--color-text-primary)",
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
+              </>
             )}
 
             {formError && (
@@ -423,12 +506,9 @@ export default function EditSessionPage() {
 
             <button
               type="submit"
-              disabled={submitting || !newText.trim()}
+              disabled={submitting || (isPoker ? !newStoryTitle.trim() : !newText.trim())}
               className="rounded-lg px-4 py-3 text-sm font-medium disabled:opacity-50"
-              style={{
-                backgroundColor: "var(--color-accent)",
-                color: "#0D1117",
-              }}
+              style={{ backgroundColor: "var(--color-accent)", color: "#0D1117" }}
             >
               {submitting ? t("addingButton") : t("addButton")}
             </button>

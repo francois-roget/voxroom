@@ -109,6 +109,16 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
                   <span
                     className="text-xs px-2 py-0.5 rounded-full"
                     style={{
+                      backgroundColor: s.kind === 'poker' ? 'rgba(14,165,233,0.15)' : 'var(--color-bg-elevated)',
+                      color: s.kind === 'poker' ? '#0EA5E9' : 'var(--color-text-muted)',
+                      border: `1px solid ${s.kind === 'poker' ? '#0EA5E9' : 'var(--color-border)'}`,
+                    }}
+                  >
+                    {s.kind === 'poker' ? t('kindPoker') : t('kindPoll')}
+                  </span>
+                  <span
+                    className="text-xs px-2 py-0.5 rounded-full"
+                    style={{
                       backgroundColor:
                         s.status === 'active'
                           ? 'rgba(0,229,160,0.15)'

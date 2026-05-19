@@ -55,6 +55,36 @@
     "waitingForPresenter": "En attente du formateur…",
     "responseCount": "{count, plural, one {# réponse} other {# réponses}}"
   },
+  "poker": {
+    "namePromptTitle": "Rejoindre la session",
+    "namePromptSubtitle": "Entrez votre nom pour commencer à voter",
+    "namePlaceholder": "Votre nom",
+    "joinButton": "Rejoindre",
+    "waitingStory": "En attente d'une histoire de la part de l'animateur…",
+    "votingOpen": "Voter sur l'histoire",
+    "voteSubmitted": "Vote soumis — en attente de la révélation…",
+    "revealTitle": "Résultats",
+    "storyLabel": "Histoire",
+    "jiraLinkLabel": "Jira",
+    "votedCount": "{voted}/{total} voté(s)",
+    "pending": "En attente",
+    "voted": "A voté",
+    "revealButton": "Révéler les votes",
+    "resetButton": "Nouveau vote",
+    "resetConfirm": "Réinitialiser ce tour ? Tous les votes seront supprimés.",
+    "closeStory": "Fermer l'histoire",
+    "openVoting": "Ouvrir le vote",
+    "participants": "Participants",
+    "noParticipants": "Aucun participant pour l'instant",
+    "waitingParticipants": "En attente des participants…",
+    "cancelReset": "Annuler",
+    "codeLabel": "Code",
+    "errors": {
+      "invalidValue": "Valeur de vote invalide",
+      "mustJoin": "Vous devez rejoindre la session avant de voter",
+      "alreadyVoted": "Vous avez déjà voté sur cette histoire"
+    }
+  },
   "dashboard": {
     "title": "Mes sessions",
     "newSession": "+ Nouvelle session",
@@ -66,7 +96,9 @@
     "statusActive": "En cours",
     "statusClosed": "Terminée",
     "editButton": "Éditer",
-    "controlButton": "Contrôle"
+    "controlButton": "Contrôle",
+    "kindPoll": "Sondage",
+    "kindPoker": "Sprint Poker"
   },
   "sessions": {
     "new": {
@@ -78,7 +110,10 @@
       "createButton": "Créer",
       "creatingButton": "Création…",
       "genericError": "Une erreur est survenue.",
-      "networkError": "Impossible de créer la session."
+      "networkError": "Impossible de créer la session.",
+      "kindLabel": "Type de session",
+      "kindPoll": "Sondage en direct",
+      "kindPoker": "Sprint Poker"
     },
     "edit": {
       "loading": "Chargement…",
@@ -104,6 +139,12 @@
       "addingButton": "Ajout…",
       "mcqLabel": "QCM — {choices}",
       "wordcloudLabel": "Nuage de mots",
+      "pokerStoryLabel": "Histoire",
+      "addStoryTitle": "Ajouter une histoire",
+      "storyTitleLabel": "Titre de l'histoire",
+      "storyTitlePlaceholder": "ex : L'utilisateur peut se connecter via Google",
+      "jiraUrlLabel": "Lien Jira (optionnel)",
+      "jiraUrlPlaceholder": "https://...",
       "moveUp": "Monter",
       "moveDown": "Descendre",
       "reorderError": "Impossible de réorganiser les questions."

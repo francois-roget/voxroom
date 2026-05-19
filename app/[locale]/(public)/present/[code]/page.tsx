@@ -14,7 +14,8 @@ import {
 } from "recharts";
 import { useTranslations } from "next-intl";
 import { usePusherChannel } from "@/hooks/usePusherChannel";
-import type { IQuestion, ISession, AggregatedResult } from "@/types";
+import PokerPresenter from "@/components/poker/PokerPresenter";
+import type { IQuestion, ISession, AggregatedResult, PokerParticipantSummary, PokerVote } from "@/types";
 
 type PresenterState = "waiting" | "open" | "revealed";
 
@@ -44,17 +45,44 @@ export default function PresenterPage() {
   const [results, setResults] = useState<AggregatedResult | null>(null);
   const [joinUrl, setJoinUrl] = useState("");
 
+  // Poker state
+  const [pokerParticipants, setPokerParticipants] = useState<PokerParticipantSummary[]>([]);
+  const [pokerVotes, setPokerVotes] = useState<PokerVote[]>([]);
+  const [pokerStory, setPokerStory] = useState<{ id: string; text: string; jiraUrl: string | null; status: string } | null>(null);
+
   const load = useCallback(async () => {
     const res = await fetch(`/api/sessions/${code}`);
     if (!res.ok) return;
-    const data = await res.json();
+    const data = await res.json() as {
+      session: ISession;
+      questions: IQuestion[];
+      responseCount: number;
+      participants: PokerParticipantSummary[];
+    };
     setSession(data.session);
+
+    if (data.session.kind === 'poker') {
+      setPokerParticipants(data.participants ?? []);
+      const openQ = data.questions.find((q) => q.status === 'open') ?? null;
+      const revealedQ = data.questions.find((q) => q.status === 'revealed') ?? null;
+      const activeQ = openQ ?? revealedQ;
+      if (activeQ) {
+        setPokerStory({
+          id: String(activeQ._id),
+          text: activeQ.text,
+          jiraUrl: activeQ.storyMeta?.jiraUrl ?? null,
+          status: activeQ.status,
+        });
+      }
+      return;
+    }
+
     setResponseCount(data.responseCount ?? 0);
 
-    const openQ = (data.questions as IQuestion[]).find(
+    const openQ = data.questions.find(
       (q) => q.status === "open",
     );
-    const revealedQ = (data.questions as IQuestion[]).find(
+    const revealedQ = data.questions.find(
       (q) => q.status === "revealed",
     );
 
@@ -117,6 +145,19 @@ export default function PresenterPage() {
         value: count,
       }))
     : [];
+
+  // Poker render branch
+  if (session?.kind === 'poker') {
+    return (
+      <PokerPresenter
+        code={code.toUpperCase()}
+        sessionName={session.name}
+        initialStory={pokerStory}
+        initialParticipants={pokerParticipants}
+        initialVotes={pokerVotes}
+      />
+    );
+  }
 
   return (
     <main

@@ -7,7 +7,8 @@ import { useTranslations } from 'next-intl';
 import { usePusherChannel } from '@/hooks/usePusherChannel';
 import LoadingScreen from '@/components/shared/LoadingScreen';
 import ErrorCard from '@/components/shared/ErrorCard';
-import type { IQuestion, ISession, AggregatedResult } from '@/types';
+import PokerControl from '@/components/poker/PokerControl';
+import type { IQuestion, ISession, AggregatedResult, PokerParticipantSummary } from '@/types';
 
 export default function ControlPage() {
   const { code } = useParams<{ code: string }>();
@@ -22,6 +23,7 @@ export default function ControlPage() {
 
   const [session, setSession] = useState<ISession | null>(null);
   const [questions, setQuestions] = useState<IQuestion[]>([]);
+  const [participants, setParticipants] = useState<PokerParticipantSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -32,10 +34,16 @@ export default function ControlPage() {
     try {
       const res = await fetch(`/api/sessions/${code}`);
       if (!res.ok) { setError(t('sessionNotFound')); return; }
-      const data = await res.json();
+      const data = await res.json() as {
+        session: ISession;
+        questions: IQuestion[];
+        responseCount: number;
+        participants: PokerParticipantSummary[];
+      };
       setSession(data.session);
       setQuestions(data.questions);
       setLiveCount(data.responseCount ?? 0);
+      setParticipants(data.participants ?? []);
     } catch {
       setError(t('loadingError'));
     } finally {
@@ -117,8 +125,33 @@ export default function ControlPage() {
           </div>
         </div>
 
-        {/* Questions */}
-        {questions.length === 0 ? (
+        {/* Poker branch */}
+        {session.kind === 'poker' && (() => {
+          const currentStory = questions.find((q) =>
+            q.status === 'open' || q.status === 'revealed',
+          ) ?? questions.find((q) => q.status === 'pending') ?? null;
+
+          const storyForControl = currentStory
+            ? {
+                id: String(currentStory._id),
+                text: currentStory.text,
+                jiraUrl: (currentStory.storyMeta?.jiraUrl) ?? null,
+                status: currentStory.status,
+              }
+            : null;
+
+          return (
+            <PokerControl
+              code={code.toUpperCase()}
+              sessionId={String(session._id)}
+              initialStory={storyForControl}
+              initialParticipants={participants}
+            />
+          );
+        })()}
+
+        {/* Questions (poll only) */}
+        {session.kind !== 'poker' && (questions.length === 0 ? (
           <div
             className="rounded-xl p-8 text-center"
             style={{ backgroundColor: 'var(--color-bg-surface)', border: '1px solid var(--color-border)' }}
@@ -229,7 +262,7 @@ export default function ControlPage() {
               );
             })}
           </div>
-        )}
+        ))}
       </div>
     </main>
   );

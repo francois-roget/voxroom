@@ -4,11 +4,19 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
-import { getOrCreateParticipantId, hasAnswered, markAnswered } from "@/lib/localStorage";
+import {
+  getOrCreateParticipantId,
+  hasAnswered,
+  markAnswered,
+  getParticipantName,
+  clearAnswered,
+} from "@/lib/localStorage";
 import { usePusherChannel } from "@/hooks/usePusherChannel";
 import LoadingScreen from "@/components/shared/LoadingScreen";
 import ErrorCard from "@/components/shared/ErrorCard";
-import type { IQuestion, ISession } from "@/types";
+import PokerJoinForm from "@/components/poker/PokerJoinForm";
+import PokerDeck from "@/components/poker/PokerDeck";
+import type { IQuestion, ISession, PokerVote } from "@/types";
 
 const API_ERROR_KEYS: Record<string, string> = {
   "Question is not open": "errors.questionNotOpen",
@@ -20,6 +28,7 @@ const API_ERROR_KEYS: Record<string, string> = {
 export default function SessionPage() {
   const { code } = useParams<{ code: string }>();
   const t = useTranslations("session");
+  const tPoker = useTranslations("poker");
 
   const [session, setSession] = useState<ISession | null>(null);
   const [openQuestion, setOpenQuestion] = useState<IQuestion | null>(null);
@@ -27,12 +36,30 @@ export default function SessionPage() {
   const [error, setError] = useState("");
   const [sessionClosed, setSessionClosed] = useState(false);
 
+  // Poll state
   const [selected, setSelected] = useState("");
   const [wordInput, setWordInput] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [answered, setAnswered] = useState(false);
   const [alreadyAnswered, setAlreadyAnswered] = useState(false);
   const [submitError, setSubmitError] = useState("");
+
+  // Poker state
+  const [pokerName, setPokerName] = useState<string | null>(null);
+  const [pokerParticipant, setPokerParticipant] = useState<{
+    participantId: string;
+    name: string;
+    color: string;
+  } | null>(null);
+  type PokerPhase = 'waiting' | 'open' | 'revealed';
+  const [pokerPhase, setPokerPhase] = useState<PokerPhase>('waiting');
+  const [pokerStory, setPokerStory] = useState<{
+    id: string;
+    text: string;
+    jiraUrl: string | null;
+  } | null>(null);
+  const [pokerHasVoted, setPokerHasVoted] = useState(false);
+  const [pokerVotes, setPokerVotes] = useState<PokerVote[]>([]);
 
   const load = useCallback(async () => {
     try {
@@ -41,7 +68,11 @@ export default function SessionPage() {
         setError(t("errors.sessionNotFound"));
         return;
       }
-      const data = await res.json();
+      const data = await res.json() as {
+        session: ISession;
+        questions: IQuestion[];
+        responseCount: number;
+      };
       setSession(data.session);
 
       if (data.session.status === "closed") {
@@ -49,7 +80,39 @@ export default function SessionPage() {
         return;
       }
 
-      const open = (data.questions as IQuestion[]).find((q) => q.status === "open") ?? null;
+      // Poker session setup
+      if (data.session.kind === 'poker') {
+        const storedName = getParticipantName(code);
+        setPokerName(storedName);
+        if (storedName) {
+          const pid = getOrCreateParticipantId();
+          setPokerParticipant({ participantId: pid, name: storedName, color: '#888888' });
+        }
+        // Determine current story phase
+        const openQ = data.questions.find((q) => q.status === 'open') ?? null;
+        const revealedQ = data.questions.find((q) => q.status === 'revealed') ?? null;
+        const activeQ = openQ ?? revealedQ;
+        if (openQ) {
+          setPokerPhase('open');
+          setPokerStory({
+            id: String(openQ._id),
+            text: openQ.text,
+            jiraUrl: openQ.storyMeta?.jiraUrl ?? null,
+          });
+          setPokerHasVoted(hasAnswered(String(openQ._id)));
+        } else if (revealedQ) {
+          setPokerPhase('revealed');
+          setPokerStory({
+            id: String(revealedQ._id),
+            text: revealedQ.text,
+            jiraUrl: revealedQ.storyMeta?.jiraUrl ?? null,
+          });
+        }
+        void activeQ; // suppress unused var warning
+        return;
+      }
+
+      const open = data.questions.find((q) => q.status === "open") ?? null;
       setOpenQuestion(open);
       const alreadyAnsweredQuestion = !!(open && hasAnswered(String(open._id)));
       setAlreadyAnswered(alreadyAnsweredQuestion);
@@ -90,7 +153,43 @@ export default function SessionPage() {
     'session:closed': (_data) => {
       setSessionClosed(true);
     },
+    'story:opened': (data) => {
+      const payload = data as { story: { id: string; text: string; jiraUrl: string | null } };
+      setPokerStory(payload.story);
+      setPokerPhase('open');
+      setPokerHasVoted(false);
+      setPokerVotes([]);
+    },
+    'story:revealed': (data) => {
+      const payload = data as { votes: PokerVote[] };
+      setPokerPhase('revealed');
+      setPokerVotes(payload.votes);
+    },
+    'story:closed': () => {
+      setPokerPhase('waiting');
+      setPokerStory(null);
+    },
+    'story:reset': (data) => {
+      const payload = data as { storyId: string };
+      if (pokerStory && payload.storyId === pokerStory.id) {
+        clearAnswered(pokerStory.id);
+      }
+      setPokerPhase('open');
+      setPokerHasVoted(false);
+      setPokerVotes([]);
+    },
+    'vote:cast': (data) => {
+      const payload = data as { participantId: string | null };
+      if (payload.participantId === null) {
+        setPokerHasVoted(false);
+      }
+    },
   });
+
+  function handlePokerJoined(participant: { participantId: string; name: string; color: string }) {
+    setPokerParticipant(participant);
+    setPokerName(participant.name);
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -142,6 +241,80 @@ export default function SessionPage() {
 
   if (error || !session) {
     return <ErrorCard message={error || t("errors.sessionNotFound")} href="/join" linkText={t("joinSession")} />;
+  }
+
+  // Poker session rendering
+  if (session.kind === 'poker') {
+    if (!pokerName) {
+      return (
+        <PokerJoinForm
+          sessionCode={code}
+          onJoined={handlePokerJoined}
+        />
+      );
+    }
+
+    const pid = pokerParticipant?.participantId ?? getOrCreateParticipantId();
+
+    return (
+      <main
+        className="min-h-screen flex flex-col items-center justify-center p-6"
+        style={{ backgroundColor: 'var(--color-bg-base)' }}
+      >
+        {pokerPhase === 'waiting' && (
+          <p className="text-lg" style={{ color: 'var(--color-text-secondary)' }}>
+            {tPoker('waitingStory')}
+          </p>
+        )}
+
+        {pokerPhase === 'open' && pokerStory && !pokerHasVoted && (
+          <PokerDeck
+            questionId={pokerStory.id}
+            sessionId={String(session._id)}
+            participantId={pid}
+            participantName={pokerParticipant?.name ?? pokerName}
+            onVoted={() => setPokerHasVoted(true)}
+          />
+        )}
+
+        {pokerPhase === 'open' && pokerHasVoted && (
+          <div className="text-center flex flex-col gap-3">
+            <p className="text-lg font-medium" style={{ color: 'var(--color-text-secondary)' }}>
+              {tPoker('voteSubmitted')}
+            </p>
+          </div>
+        )}
+
+        {pokerPhase === 'revealed' && (
+          <div className="flex flex-col items-center gap-4 w-full max-w-sm">
+            <p className="text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
+              {tPoker('revealTitle')}
+            </p>
+            <div className="grid grid-cols-3 gap-3 w-full">
+              {pokerVotes.map((vote) => (
+                <div
+                  key={vote.participantId}
+                  className="rounded-xl flex flex-col items-center justify-center p-3 aspect-[2/3]"
+                  style={{
+                    backgroundColor: vote.color + '33',
+                    borderColor: vote.color,
+                    borderWidth: 2,
+                    borderStyle: 'solid',
+                  }}
+                >
+                  <span className="text-3xl font-black" style={{ color: vote.color }}>
+                    {vote.value}
+                  </span>
+                  <span className="text-xs mt-1 truncate w-full text-center" style={{ color: vote.color }}>
+                    {vote.name}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </main>
+    );
   }
 
   if (sessionClosed) {

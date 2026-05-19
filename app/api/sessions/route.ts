@@ -42,10 +42,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  const name = (body as Record<string, unknown>)?.name;
+  const bodyRecord = body as Record<string, unknown>;
+  const name = bodyRecord?.name;
   if (!name || typeof name !== 'string' || name.trim().length === 0) {
     return NextResponse.json({ error: 'name is required' }, { status: 400 });
   }
+
+  const rawKind = bodyRecord?.kind;
+  if (rawKind !== undefined && rawKind !== 'poll' && rawKind !== 'poker') {
+    return NextResponse.json({ error: 'kind must be poll or poker' }, { status: 400 });
+  }
+  const kind: 'poll' | 'poker' = rawKind === 'poker' ? 'poker' : 'poll';
 
   try {
     await connectDB();
@@ -66,6 +73,7 @@ export async function POST(request: Request) {
     const newSession = await Session.create({
       code,
       name: name.trim(),
+      kind,
       ownerId: dbUser._id,
     });
 

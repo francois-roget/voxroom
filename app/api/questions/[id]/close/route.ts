@@ -25,6 +25,7 @@ export async function POST(
     const question = await Question.findById(id).lean() as {
       _id: unknown;
       sessionId: unknown;
+      type: string;
     } | null;
     if (!question) return NextResponse.json({ error: 'Question not found' }, { status: 404 });
 
@@ -45,7 +46,11 @@ export async function POST(
 
     await Session.findByIdAndUpdate(question.sessionId, { currentQuestionId: null });
 
-    await pusher.trigger(`session-${voxSession.code}`, 'question:closed', {});
+    if (question.type === 'poker') {
+      await pusher.trigger(`session-${voxSession.code}`, 'story:closed', {});
+    } else {
+      await pusher.trigger(`session-${voxSession.code}`, 'question:closed', {});
+    }
 
     return NextResponse.json(updated);
   } catch (err) {

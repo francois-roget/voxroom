@@ -6,6 +6,7 @@ const ResponseSchema = new Schema<IResponse>({
   sessionId: { type: Schema.Types.ObjectId, ref: 'Session', required: true },
   participantId: { type: String, required: true },
   value: { type: String, required: true },
+  participantName: { type: String, default: null },
   createdAt: { type: Date, default: Date.now },
 });
 

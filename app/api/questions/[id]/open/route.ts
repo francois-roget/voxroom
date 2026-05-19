@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { connectDB } from '@/lib/db';
 import { pusher } from '@/lib/pusher';
+import { POKER_DECK } from '@/lib/poker';
 import Question from '@/models/Question';
 import Response from '@/models/Response';
 import Session from '@/models/Session';
@@ -29,6 +30,7 @@ export async function POST(
       text: string;
       choices: string[];
       type: string;
+      storyMeta?: { jiraUrl?: string | null };
     } | null;
     if (!question) return NextResponse.json({ error: 'Question not found' }, { status: 404 });
 
@@ -60,15 +62,26 @@ export async function POST(
 
     const responseCount = await Response.countDocuments({ questionId: id });
 
-    await pusher.trigger(`session-${voxSession.code}`, 'question:opened', {
-      question: {
-        _id: String(question._id),
-        text: question.text,
-        choices: question.choices,
-        type: question.type,
-      },
-      responseCount,
-    });
+    if (question.type === 'poker') {
+      await pusher.trigger(`session-${voxSession.code}`, 'story:opened', {
+        story: {
+          id: String(question._id),
+          text: question.text,
+          jiraUrl: question.storyMeta?.jiraUrl ?? null,
+          deck: [...POKER_DECK],
+        },
+      });
+    } else {
+      await pusher.trigger(`session-${voxSession.code}`, 'question:opened', {
+        question: {
+          _id: String(question._id),
+          text: question.text,
+          choices: question.choices,
+          type: question.type,
+        },
+        responseCount,
+      });
+    }
 
     return NextResponse.json(updated);
   } catch (err) {

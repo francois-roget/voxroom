@@ -55,6 +55,36 @@
     "waitingForPresenter": "Waiting for the presenter...",
     "responseCount": "{count, plural, one {# response} other {# responses}}"
   },
+  "poker": {
+    "namePromptTitle": "Join the session",
+    "namePromptSubtitle": "Enter your name to start voting",
+    "namePlaceholder": "Your name",
+    "joinButton": "Join",
+    "waitingStory": "Waiting for the host to open a story…",
+    "votingOpen": "Vote on the story",
+    "voteSubmitted": "Vote submitted — waiting for reveal…",
+    "revealTitle": "Results",
+    "storyLabel": "Story",
+    "jiraLinkLabel": "Jira",
+    "votedCount": "{voted}/{total} voted",
+    "pending": "Waiting",
+    "voted": "Voted",
+    "revealButton": "Reveal votes",
+    "resetButton": "New vote",
+    "resetConfirm": "Reset this round? All votes will be deleted.",
+    "closeStory": "Close story",
+    "openVoting": "Open voting",
+    "participants": "Participants",
+    "noParticipants": "No participants yet",
+    "waitingParticipants": "Waiting for participants…",
+    "cancelReset": "Cancel",
+    "codeLabel": "Code",
+    "errors": {
+      "invalidValue": "Invalid vote value",
+      "mustJoin": "You must join the session before voting",
+      "alreadyVoted": "You have already voted on this story"
+    }
+  },
   "dashboard": {
     "title": "My sessions",
     "newSession": "+ New session",
@@ -66,7 +96,9 @@
     "statusActive": "Active",
     "statusClosed": "Closed",
     "editButton": "Edit",
-    "controlButton": "Control"
+    "controlButton": "Control",
+    "kindPoll": "Polling",
+    "kindPoker": "Sprint Poker"
   },
   "sessions": {
     "new": {
@@ -78,7 +110,10 @@
       "createButton": "Create",
       "creatingButton": "Creating...",
       "genericError": "An error occurred.",
-      "networkError": "Unable to create the session."
+      "networkError": "Unable to create the session.",
+      "kindLabel": "Session type",
+      "kindPoll": "Live polling",
+      "kindPoker": "Sprint Poker"
     },
     "edit": {
       "loading": "Loading...",
@@ -104,6 +139,12 @@
       "addingButton": "Adding...",
       "mcqLabel": "MCQ — {choices}",
       "wordcloudLabel": "Word cloud",
+      "pokerStoryLabel": "Story",
+      "addStoryTitle": "Add a story",
+      "storyTitleLabel": "Story title",
+      "storyTitlePlaceholder": "e.g. User can log in via Google",
+      "jiraUrlLabel": "Jira link (optional)",
+      "jiraUrlPlaceholder": "https://...",
       "moveUp": "Move up",
       "moveDown": "Move down",
       "reorderError": "Unable to reorder questions."
